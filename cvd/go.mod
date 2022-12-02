@@ -1,4 +1,4 @@
-module github.com/ThreatWinds/ETL/geolocation
+module github.com/ThreatWinds/ETL/cvd
 
 go 1.19
 

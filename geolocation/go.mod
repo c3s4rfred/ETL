@@ -1,4 +1,4 @@
-module github.com/quantfall/tidc/geoip
+module github.com/ThreatWinds/ETL/geolocation
 
 go 1.19
 
