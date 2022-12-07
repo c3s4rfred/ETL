@@ -6,8 +6,10 @@ import utm.sdk.threatwinds.enums.TWEndPointEnum;
 import utm.sdk.threatwinds.factory.RequestFactory;
 import utm.sdk.threatwinds.interfaces.IRequestExecutor;
 import utm.threatintelligence.config.EnvironmentConfig;
+import utm.threatintelligence.entity.ein.common.IPListObject;
 import utm.threatintelligence.entity.ein.common.YaraRuleObject;
 import utm.threatintelligence.entity.ein.github.yara.GHYaraExtractor;
+import utm.threatintelligence.entity.transform.transf.FromIPListToEntity;
 import utm.threatintelligence.entity.transform.transf.FromYaraToEntity;
 import utm.threatintelligence.enums.FeedTypeEnum;
 import utm.threatintelligence.enums.FlowPhasesEnum;
@@ -21,16 +23,18 @@ import utm.threatintelligence.scraper.LinkListGenerator;
 import utm.threatintelligence.scraper.LinkPage;
 import utm.threatintelligence.urlcreator.FullPathUrlCreator;
 
+import java.io.FileOutputStream;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
-public class GHYaraJob implements IJobExecutor {
-    private final Logger log = LoggerFactory.getLogger(GHYaraJob.class);
-    private static final String CLASSNAME = "GHYaraJob";
+public class IPListJob implements IJobExecutor {
+    private final Logger log = LoggerFactory.getLogger(IPListJob.class);
+    private static final String CLASSNAME = "IPListJob";
 
-    public GHYaraJob() {
+    public IPListJob() {
     }
 
     @Override
@@ -44,27 +48,21 @@ public class GHYaraJob implements IJobExecutor {
 
         // ----------------------- Log the feed scrap to search for links -------------------------//
         try {
-            // RFXN is a direct resource and don't have content-type, so, the feed url have to be inserted directly
-            // in the list of links
-            if (FeedTypeEnum.TYPE_RFXN_YARA.getVarValue().compareToIgnoreCase(EnvironmentConfig.FEED_FORMAT) == 0) {
+            // EMERGING_THREAT_NET_COMP_IPS is a direct resource and don't have content-type, so, the feed url have to
+            // be inserted directly in the list of links
+            if (FeedTypeEnum.TYPE_EMERGING_THREAT_NET_COMP_IPS.getVarValue().compareToIgnoreCase(EnvironmentConfig.FEED_FORMAT) == 0) {
                 LinkPage.getListOfLinks().add(EnvironmentConfig.FEED_URL);
-            }
-            // If other yara, perform the recursive path scan
-            else {
-                IProcessor lpro = new LinkListGenerator();
-                lpro.process(EnvironmentConfig.FEED_URL);
             }
         } catch (Exception ex) {
             log.error(ctx + ": " + new LogDef(LogTypeEnum.TYPE_ERROR.getVarValue(),
                     feedSelected, "Problem getting data from host: " + ex.getLocalizedMessage()).logDefToString());
         }
-
         //First we create fixed thread pool executor with 8 threads, one per file
         ThreadPoolExecutor executor = (ThreadPoolExecutor) Executors.newFixedThreadPool(EnvironmentConfig.THREAD_POOL_SIZE);
 
         //--------------------------------The concurrent ETL process is here-------------------------------------------
         while (LinkPage.getListOfLinks().size() > 0) {
-            executor.execute(new GitHubYaraParallelTask((String) LinkPage.getListOfLinks().remove(0)));
+            executor.execute(new IPListJob.IPListParallelTask((String) LinkPage.getListOfLinks().remove(0)));
         }
 
         //Thread end is called
@@ -80,19 +78,19 @@ public class GHYaraJob implements IJobExecutor {
 
         log.info(ctx + ": " + new LogDef(LogTypeEnum.TYPE_EXECUTION.getVarValue(), feedSelected,
                 FlowPhasesEnum.PN_END_PROCESS.getVarValue()).logDefToString());
-    }
 
-    public class GitHubYaraParallelTask implements Runnable {
+    }
+    public class IPListParallelTask implements Runnable {
 
         String link;
 
-        public GitHubYaraParallelTask(String link) {
+        public IPListParallelTask(String link) {
             this.link = link;
         }
 
         @Override
         public void run() {
-            final String ctx = CLASSNAME + ".parallelGitHubYaraExecutor";
+            final String ctx = CLASSNAME + ".parallelIPListExecutor";
             GenericParser gp = new GenericParser();
             FileStreamReader reader = new FileStreamReader();
             String linkToProcess = "";
@@ -103,22 +101,23 @@ public class GHYaraJob implements IJobExecutor {
                 log.info(ctx + ": " + new LogDef(LogTypeEnum.TYPE_EXECUTION.getVarValue(), linkToProcess,
                         FlowPhasesEnum.P1_READ_FILE.getVarValue()).logDefToString());
 
-                String dataFromFile = reader.readFile(
+                List<String> dataFromFile = reader.readFileAsList(
                         new FullPathUrlCreator().createURL(linkToProcess, EnvironmentConfig.LINK_SEPARATOR)
                 );
 
-                // ----------------------- Log and execute mapping from JSON file to class -------------------------//
+                // ----------------------- Log and execute mapping from file to class -------------------------//
                 log.info(ctx + ": " + new LogDef(LogTypeEnum.TYPE_EXECUTION.getVarValue(), linkToProcess,
                         FlowPhasesEnum.P2_MAP_JSON_TO_CLASS.getVarValue()).logDefToString());
 
-                ArrayList<YaraRuleObject> yaraRuleObjects = new GHYaraExtractor(dataFromFile).getYaraRuleObjects();
+                IPListObject ipListObject = new IPListObject(dataFromFile,EnvironmentConfig.FEED_THREAT_DESCRIPTION,
+                        EnvironmentConfig.FEED_BASE_REPUTATION);
 
                 // ----------------------- Log and execute transformation to Entity class -------------------------//
                 log.info(ctx + ": " + new LogDef(LogTypeEnum.TYPE_EXECUTION.getVarValue(), linkToProcess,
                         FlowPhasesEnum.P3_TRANSFORM_TO_ENTITY.getVarValue()).logDefToString());
 
-                FromYaraToEntity fromYaraToEntity = new FromYaraToEntity();
-                fromYaraToEntity.transform(yaraRuleObjects, null);
+                FromIPListToEntity fromIPListToEntity = new FromIPListToEntity();
+                fromIPListToEntity.transform(ipListObject, null);
 
                 // ----------------------- Log and execute mapping Entity to JSON -------------------------//
                 log.info(ctx + ": " + new LogDef(LogTypeEnum.TYPE_EXECUTION.getVarValue(), linkToProcess,
@@ -127,7 +126,7 @@ public class GHYaraJob implements IJobExecutor {
                 // ----------------------- Inserting via sdk -------------------------//
                 IRequestExecutor mainJob = new RequestFactory(100).getExecutor();
                 if (mainJob != null) {
-                    String output = (String) mainJob.executeRequest(TWEndPointEnum.POST_ENTITIES.get(), fromYaraToEntity.getThreatIntEntityList());
+                    String output = (String) mainJob.executeRequest(TWEndPointEnum.POST_ENTITIES.get(), fromIPListToEntity.getThreatIntEntityList());
                     log.info(ctx + " " + linkToProcess + ": " + output);
                 }
 

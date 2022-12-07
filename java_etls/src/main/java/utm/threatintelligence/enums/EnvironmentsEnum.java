@@ -3,6 +3,8 @@ package utm.threatintelligence.enums;
 /*Enum to define all environment variables used in the ETL process*/
 public enum EnvironmentsEnum {
     FEED_URL("FEED_URL"),
+    FEED_THREAT_DESCRIPTION("FEED_THREAT_DESCRIPTION"),
+    FEED_BASE_REPUTATION("FEED_BASE_REPUTATION"),
     LINK_PATTERN("LINK_PATTERN"),
     GITHUB_BRANCH_NAME("GITHUB_BRANCH_NAME"),
     THREAD_POOL_SIZE("THREAD_POOL_SIZE"),

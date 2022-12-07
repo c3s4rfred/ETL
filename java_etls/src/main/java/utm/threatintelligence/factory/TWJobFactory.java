@@ -3,6 +3,7 @@ package utm.threatintelligence.factory;
 import utm.threatintelligence.config.EnvironmentConfig;
 import utm.threatintelligence.entity.transform.jobs.DefaultJob;
 import utm.threatintelligence.entity.transform.jobs.GHYaraJob;
+import utm.threatintelligence.entity.transform.jobs.IPListJob;
 import utm.threatintelligence.entity.transform.jobs.OCJob;
 import utm.threatintelligence.enums.FeedTypeEnum;
 import utm.threatintelligence.interfaces.IJobExecutor;
@@ -27,6 +28,8 @@ public class TWJobFactory {
             } else if (FeedTypeEnum.TYPE_GITHUB_YARA.getVarValue().compareToIgnoreCase(EnvironmentConfig.FEED_FORMAT) == 0 ||
                     FeedTypeEnum.TYPE_RFXN_YARA.getVarValue().compareToIgnoreCase(EnvironmentConfig.FEED_FORMAT) == 0) {
                 return new GHYaraJob();
+            } else if (FeedTypeEnum.TYPE_EMERGING_THREAT_NET_COMP_IPS.getVarValue().compareToIgnoreCase(EnvironmentConfig.FEED_FORMAT) == 0) {
+                return new IPListJob();
             } else {
                 return new DefaultJob();
             }
