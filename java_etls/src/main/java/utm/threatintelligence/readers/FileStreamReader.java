@@ -12,6 +12,7 @@ public class FileStreamReader implements IReader {
 
     @Override
     public String readFile(URL urlFile) throws IOException {
+        System.setProperty("http.agent", "Chrome"); // To avoid error 403
         URL url = urlFile;
         BufferedReader in = new BufferedReader(new InputStreamReader(url.openStream()));
 
@@ -28,6 +29,7 @@ public class FileStreamReader implements IReader {
 
     @Override
     public List<String> readFileAsList(URL urlFile) throws Exception {
+        System.setProperty("http.agent", "Chrome"); // To avoid error 403
         URL url = urlFile;
         BufferedReader in = new BufferedReader(new InputStreamReader(url.openStream()));
 
