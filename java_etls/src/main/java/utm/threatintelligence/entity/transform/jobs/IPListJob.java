@@ -25,6 +25,7 @@ import utm.threatintelligence.urlcreator.FullPathUrlCreator;
 
 import java.io.FileOutputStream;
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ThreadPoolExecutor;
@@ -48,9 +49,10 @@ public class IPListJob implements IJobExecutor {
 
         // ----------------------- Log the feed scrap to search for links -------------------------//
         try {
-            // EMERGING_THREAT_NET_COMP_IPS is a direct resource and don't have content-type, so, the feed url have to
+            // EMERGING_THREAT_NET_COMP_IPS, ABUSE_SSLIP_BLACKLIST are direct resource and don't have content-type, so, the feed url have to
             // be inserted directly in the list of links
-            if (FeedTypeEnum.TYPE_EMERGING_THREAT_NET_COMP_IPS.getVarValue().compareToIgnoreCase(EnvironmentConfig.FEED_FORMAT) == 0) {
+            if (FeedTypeEnum.TYPE_EMERGING_THREAT_NET_COMP_IPS.getVarValue().compareToIgnoreCase(EnvironmentConfig.FEED_FORMAT) == 0 ||
+                    FeedTypeEnum.TYPE_ABUSE_SSLIP_BLACKLIST.getVarValue().compareToIgnoreCase(EnvironmentConfig.FEED_FORMAT) == 0) {
                 LinkPage.getListOfLinks().add(EnvironmentConfig.FEED_URL);
             }
         } catch (Exception ex) {
@@ -80,6 +82,7 @@ public class IPListJob implements IJobExecutor {
                 FlowPhasesEnum.PN_END_PROCESS.getVarValue()).logDefToString());
 
     }
+
     public class IPListParallelTask implements Runnable {
 
         String link;
@@ -104,12 +107,17 @@ public class IPListJob implements IJobExecutor {
                 List<String> dataFromFile = reader.readFileAsList(
                         new FullPathUrlCreator().createURL(linkToProcess, EnvironmentConfig.LINK_SEPARATOR)
                 );
+                // ----------------------- Cleaning the list if is TYPE_ABUSE_SSLIP_BLACKLIST --------------------//
+                // Because have comments beginning with # and it is a csv
+                if (FeedTypeEnum.TYPE_ABUSE_SSLIP_BLACKLIST.getVarValue().compareToIgnoreCase(EnvironmentConfig.FEED_FORMAT) == 0) {
+                    dataFromFile = cleanList(dataFromFile);
+                }
 
                 // ----------------------- Log and execute mapping from file to class -------------------------//
                 log.info(ctx + ": " + new LogDef(LogTypeEnum.TYPE_EXECUTION.getVarValue(), linkToProcess,
                         FlowPhasesEnum.P2_MAP_JSON_TO_CLASS.getVarValue()).logDefToString());
 
-                IPListObject ipListObject = new IPListObject(dataFromFile,EnvironmentConfig.FEED_THREAT_DESCRIPTION,
+                IPListObject ipListObject = new IPListObject(dataFromFile, EnvironmentConfig.FEED_THREAT_DESCRIPTION,
                         EnvironmentConfig.FEED_BASE_REPUTATION);
 
                 // ----------------------- Log and execute transformation to Entity class -------------------------//
@@ -138,5 +146,18 @@ public class IPListJob implements IJobExecutor {
                 );
             }
         }
+    }
+
+    public static List<String> cleanList(List<String> origin) {
+        List<String> cleanedList = new ArrayList<>();
+        Iterator<String> it;
+        for (it = origin.iterator(); it.hasNext(); ) {
+            String attr = it.next().trim();
+            if (!attr.startsWith("#")) {
+                String[] arrayCSV = attr.split(",");
+                cleanedList.add(arrayCSV[1].trim());
+            }
+        }
+        return cleanedList;
     }
 }
