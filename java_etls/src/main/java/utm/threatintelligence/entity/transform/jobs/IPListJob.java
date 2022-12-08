@@ -49,10 +49,11 @@ public class IPListJob implements IJobExecutor {
 
         // ----------------------- Log the feed scrap to search for links -------------------------//
         try {
-            // GENERIC_IP_LIST, ABUSE_SSLIP_BLACKLIST are direct resource and don't have content-type, so, the feed url have to
+            // Those FEED_FORMAT below are direct resource and don't have content-type, so, the feed url have to
             // be inserted directly in the list of links
             if (FeedTypeEnum.TYPE_GENERIC_IP_LIST.getVarValue().compareToIgnoreCase(EnvironmentConfig.FEED_FORMAT) == 0 ||
-                    FeedTypeEnum.TYPE_ABUSE_SSLIP_BLACKLIST.getVarValue().compareToIgnoreCase(EnvironmentConfig.FEED_FORMAT) == 0 ) {
+                FeedTypeEnum.TYPE_ABUSE_SSLIP_BLACKLIST.getVarValue().compareToIgnoreCase(EnvironmentConfig.FEED_FORMAT) == 0 ||
+                FeedTypeEnum.TYPE_NUUG_POP3_GROPERS.getVarValue().compareToIgnoreCase(EnvironmentConfig.FEED_FORMAT) == 0) {
                 LinkPage.getListOfLinks().add(EnvironmentConfig.FEED_URL);
             }
         } catch (Exception ex) {
@@ -107,9 +108,10 @@ public class IPListJob implements IJobExecutor {
                 List<String> dataFromFile = reader.readFileAsList(
                         new FullPathUrlCreator().createURL(linkToProcess, EnvironmentConfig.LINK_SEPARATOR)
                 );
-                // ----------------------- Cleaning the list if is TYPE_ABUSE_SSLIP_BLACKLIST --------------------//
-                // Because have comments beginning with # and it is a csv
-                if (FeedTypeEnum.TYPE_ABUSE_SSLIP_BLACKLIST.getVarValue().compareToIgnoreCase(EnvironmentConfig.FEED_FORMAT) == 0) {
+                // ----------------------- Cleaning the list if is one of below --------------------//
+                // Because have comments beginning with # and or it is a csv
+                if (FeedTypeEnum.TYPE_ABUSE_SSLIP_BLACKLIST.getVarValue().compareToIgnoreCase(EnvironmentConfig.FEED_FORMAT) == 0 ||
+                    FeedTypeEnum.TYPE_NUUG_POP3_GROPERS.getVarValue().compareToIgnoreCase(EnvironmentConfig.FEED_FORMAT) == 0) {
                     dataFromFile = cleanList(dataFromFile);
                 }
 
@@ -149,13 +151,19 @@ public class IPListJob implements IJobExecutor {
     }
 
     public static List<String> cleanList(List<String> origin) {
+        // Do different cleaning process for different feeds
         List<String> cleanedList = new ArrayList<>();
         Iterator<String> it;
         for (it = origin.iterator(); it.hasNext(); ) {
             String attr = it.next().trim();
             if (!attr.startsWith("#")) {
-                String[] arrayCSV = attr.split(",");
-                cleanedList.add(arrayCSV[1].trim());
+                if (FeedTypeEnum.TYPE_ABUSE_SSLIP_BLACKLIST.getVarValue().compareToIgnoreCase(EnvironmentConfig.FEED_FORMAT) == 0 ) {
+                    String[] arrayCSV = attr.split(",");
+                    cleanedList.add(arrayCSV[1].trim());
+                }
+                if (FeedTypeEnum.TYPE_NUUG_POP3_GROPERS.getVarValue().compareToIgnoreCase(EnvironmentConfig.FEED_FORMAT) == 0 ) {
+                    cleanedList.add(attr);
+                }
             }
         }
         return cleanedList;

@@ -1,13 +1,22 @@
 # TWTransformationService
 
 TWTransformationService is an API to consume data from a configured feed, transform it
-to threat winds format and insert it via threat winds endpoint
+to threat winds format and insert it via threat winds endpoint. **_Current version is 1.0.0_**
+
+## Contents
+- [Project Structure](#project-structure)
+  - [Project Environment Variables](#project-environment-variables)
+  - [Feed Types](#feed-types)
+  - [Variables needed according to Feed Types](#variables-needed-according-to-feed-types)
+- [Building for production](#building-for-production)
+  - [Packaging as jar](#packaging-as-jar) 
+- [Using Docker](#using-docker)
 
 ## Project Structure
 
 `/src/*` structure follows default Java structure.
 
-### Project Environment Variables (Very Important)
+### Project Environment Variables
 
 The project have a couple of variables used to work at runtime, according to the feed you are processing.
 Variables will be explained as follows:
@@ -63,6 +72,7 @@ see tested list below:
   - https://www.dan.me.uk/torlist/?exit
   - https://www.dan.me.uk/torlist/
 - `ABUSE_SSLIP_BLACKLIST` - Type for feed: https://sslbl.abuse.ch/blacklist/sslipblacklist.csv
+- `NUUG_POP3_GROPERS` - Type for feed: https://home.nuug.no/~peter/pop3gropers.txt
 
 ### Variables needed according to Feed Types
 
@@ -105,6 +115,10 @@ optionals are marked as `Optional`, if not assume that the variable is `Required
 - `ABUSE_SSLIP_BLACKLIST`
   - `FEED_URL` - Value: https://sslbl.abuse.ch/blacklist/sslipblacklist.csv
   - `FEED_FORMAT` - Value: `ABUSE_SSLIP_BLACKLIST`
+  - `FEED_BASE_REPUTATION` - (`Optional`) Value: Any value between -3 and 0 as you determine, any other value used will default to -1.
+- `NUUG_POP3_GROPERS`
+  - `FEED_URL` - Value: https://home.nuug.no/~peter/pop3gropers.txt
+  - `FEED_FORMAT` - Value: `NUUG_POP3_GROPERS`
   - `FEED_BASE_REPUTATION` - (`Optional`) Value: Any value between -3 and 0 as you determine, any other value used will default to -1.
 
 ## Building for production
