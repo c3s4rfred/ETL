@@ -66,13 +66,17 @@ but nothing will happen
 - `GITHUB_YARA` - Type for any github repository that holds yara rules. Used in this version for feed: https://github.com/Yara-Rules/rules
 - `RFXN_YARA` - Type for feed: https://www.rfxn.com/downloads/rfxn.yara
 - `GENERIC_IP_LIST` - Type for any feed that comes from a single raw file
-and holds only separated lines of IP addresses, without comments or header, 
+and holds only separated lines of IP addresses or segments, without comments or header, 
 see tested list below:
   - https://rules.emergingthreats.net/blockrules/compromised-ips.txt
   - https://www.dan.me.uk/torlist/?exit
   - https://www.dan.me.uk/torlist/
 - `ABUSE_SSLIP_BLACKLIST` - Type for feed: https://sslbl.abuse.ch/blacklist/sslipblacklist.csv
-- `NUUG_POP3_GROPERS` - Type for feed: https://home.nuug.no/~peter/pop3gropers.txt
+- `COMMENT_IP_LIST` - Type for any feed that comes from a single raw file
+  and holds only separated lines of IP addresses or segments, with comments,
+  see tested list below:
+  - https://home.nuug.no/~peter/pop3gropers.txt
+  - https://raw.githubusercontent.com/ktsaou/blocklist-ipsets/master/firehol_level1.netset
 
 ### Variables needed according to Feed Types
 
@@ -116,8 +120,8 @@ optionals are marked as `Optional`, if not assume that the variable is `Required
   - `FEED_URL` - Value: https://sslbl.abuse.ch/blacklist/sslipblacklist.csv
   - `FEED_FORMAT` - Value: `ABUSE_SSLIP_BLACKLIST`
   - `FEED_BASE_REPUTATION` - (`Optional`) Value: Any value between -3 and 0 as you determine, any other value used will default to -1.
-- `NUUG_POP3_GROPERS`
-  - `FEED_URL` - Value: https://home.nuug.no/~peter/pop3gropers.txt
+- `COMMENT_IP_LIST`
+  - `FEED_URL` - Value: Any in the list of `COMMENT_IP_LIST` in [Feed Types](#feed-types) above
   - `FEED_FORMAT` - Value: `NUUG_POP3_GROPERS`
   - `FEED_BASE_REPUTATION` - (`Optional`) Value: Any value between -3 and 0 as you determine, any other value used will default to -1.
 

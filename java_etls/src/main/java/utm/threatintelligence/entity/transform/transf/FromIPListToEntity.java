@@ -28,7 +28,7 @@ public class FromIPListToEntity implements ITransform {
             for (it = ipListObject.iterator(); it.hasNext();) {
                 String attr = it.next();
                 ThreatIntEntity threatIntEntity = new ThreatIntEntity(
-                        TWAttributeTypesEnum.TYPE_IP.getValueType(),
+                        (attr.contains("/"))?TWAttributeTypesEnum.TYPE_CIDR.getValueType():TWAttributeTypesEnum.TYPE_IP.getValueType(),
                         attr,
                         EnvironmentConfig.FEED_BASE_REPUTATION,
                         new ArrayList<>(),

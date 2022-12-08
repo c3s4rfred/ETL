@@ -7,23 +7,17 @@ import utm.sdk.threatwinds.factory.RequestFactory;
 import utm.sdk.threatwinds.interfaces.IRequestExecutor;
 import utm.threatintelligence.config.EnvironmentConfig;
 import utm.threatintelligence.entity.ein.common.IPListObject;
-import utm.threatintelligence.entity.ein.common.YaraRuleObject;
-import utm.threatintelligence.entity.ein.github.yara.GHYaraExtractor;
 import utm.threatintelligence.entity.transform.transf.FromIPListToEntity;
-import utm.threatintelligence.entity.transform.transf.FromYaraToEntity;
 import utm.threatintelligence.enums.FeedTypeEnum;
 import utm.threatintelligence.enums.FlowPhasesEnum;
 import utm.threatintelligence.enums.LogTypeEnum;
 import utm.threatintelligence.interfaces.IJobExecutor;
-import utm.threatintelligence.interfaces.IProcessor;
 import utm.threatintelligence.json.parser.GenericParser;
 import utm.threatintelligence.logging.LogDef;
 import utm.threatintelligence.readers.FileStreamReader;
-import utm.threatintelligence.scraper.LinkListGenerator;
 import utm.threatintelligence.scraper.LinkPage;
 import utm.threatintelligence.urlcreator.FullPathUrlCreator;
 
-import java.io.FileOutputStream;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -53,7 +47,7 @@ public class IPListJob implements IJobExecutor {
             // be inserted directly in the list of links
             if (FeedTypeEnum.TYPE_GENERIC_IP_LIST.getVarValue().compareToIgnoreCase(EnvironmentConfig.FEED_FORMAT) == 0 ||
                 FeedTypeEnum.TYPE_ABUSE_SSLIP_BLACKLIST.getVarValue().compareToIgnoreCase(EnvironmentConfig.FEED_FORMAT) == 0 ||
-                FeedTypeEnum.TYPE_NUUG_POP3_GROPERS.getVarValue().compareToIgnoreCase(EnvironmentConfig.FEED_FORMAT) == 0) {
+                FeedTypeEnum.TYPE_COMMENT_IP_LIST.getVarValue().compareToIgnoreCase(EnvironmentConfig.FEED_FORMAT) == 0) {
                 LinkPage.getListOfLinks().add(EnvironmentConfig.FEED_URL);
             }
         } catch (Exception ex) {
@@ -111,7 +105,7 @@ public class IPListJob implements IJobExecutor {
                 // ----------------------- Cleaning the list if is one of below --------------------//
                 // Because have comments beginning with # and or it is a csv
                 if (FeedTypeEnum.TYPE_ABUSE_SSLIP_BLACKLIST.getVarValue().compareToIgnoreCase(EnvironmentConfig.FEED_FORMAT) == 0 ||
-                    FeedTypeEnum.TYPE_NUUG_POP3_GROPERS.getVarValue().compareToIgnoreCase(EnvironmentConfig.FEED_FORMAT) == 0) {
+                    FeedTypeEnum.TYPE_COMMENT_IP_LIST.getVarValue().compareToIgnoreCase(EnvironmentConfig.FEED_FORMAT) == 0) {
                     dataFromFile = cleanList(dataFromFile);
                 }
 
@@ -161,7 +155,7 @@ public class IPListJob implements IJobExecutor {
                     String[] arrayCSV = attr.split(",");
                     cleanedList.add(arrayCSV[1].trim());
                 }
-                if (FeedTypeEnum.TYPE_NUUG_POP3_GROPERS.getVarValue().compareToIgnoreCase(EnvironmentConfig.FEED_FORMAT) == 0 ) {
+                if (FeedTypeEnum.TYPE_COMMENT_IP_LIST.getVarValue().compareToIgnoreCase(EnvironmentConfig.FEED_FORMAT) == 0 ) {
                     cleanedList.add(attr);
                 }
             }
