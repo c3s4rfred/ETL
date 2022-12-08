@@ -12,34 +12,37 @@ to threat winds format and insert it via threat winds endpoint
 The project have a couple of variables used to work at runtime, according to the feed you are processing.
 Variables will be explained as follows:
 
--`FEED_URL` - (`Required`) Represents the URL of the feed to be executed (Ex: https://www.circl.lu/doc/misp/feed-osint/)
+- `FEED_URL` - (`Required`) Represents the URL of the feed to be executed (Ex: https://www.circl.lu/doc/misp/feed-osint/)
 
--`FEED_FORMAT` - (`Required`) Represents the name of the feed to be executed, must be the same defined in (see `Feed Types` section)
+- `FEED_FORMAT` - (`Required`) Represents the name of the feed to be executed, must be the same defined in (see `Feed Types` section)
 
--`LINK_PATTERN` - (`Optional`) Represents a pattern to include links that match in case the `FEED_URL` holds many file links and have to scrap them 
+- `FEED_BASE_REPUTATION` - (`Optional`) Represents the base reputation used for the feeds
+that don't have a field to get the reputation. Must be a value between -3 and 0, any other value used will default to -1.
+
+- `LINK_PATTERN` - (`Optional`) Represents a pattern to include links that match in case the `FEED_URL` holds many file links and have to scrap them 
 (Ex: For OSINT CIRCL is `(.+)-(.+)-(.+)-(.+)-(.+)\.json`)
 
--`GITHUB_BRANCH_NAME` - (`Optional`) Represents the base `github branch` to scan for files (Ex: `master`). Only (`Required`) for `GITHUB_YARA` feed format
+- `GITHUB_BRANCH_NAME` - (`Optional`) Represents the base `github branch` to scan for files (Ex: `master`). Only (`Required`) for `GITHUB_YARA` feed format
 
--`THREAD_POOL_SIZE` - (`Optional`) Represents the concurrent process that can be executed, must be a positive Integer > 0, if you don't provide a value or is < 1, defaults to 8
+- `THREAD_POOL_SIZE` - (`Optional`) Represents the concurrent process that can be executed, must be a positive Integer > 0, if you don't provide a value or is < 1, defaults to 8.
 
--`TW_API_URL` - (`Required`) Represents the threatwinds endpoints base URL (Without ending `/` and `/api/{TW_API_VERSION}` ), (Ex: https://api.sandbox.threatwinds.com)
+- `TW_API_URL` - (`Required`) Represents the threatwinds endpoints base URL (Without ending `/` and `/api/{TW_API_VERSION}` ), (Ex: https://api.sandbox.threatwinds.com)
 
--`TW_AUTHENTICATION` - (`Optional`) Represents the `Authentication` key to access threatwinds endpoints URL (`TW_API_URL`). 
+- `TW_AUTHENTICATION` - (`Optional`) Represents the `Authentication` key to access threatwinds endpoints URL (`TW_API_URL`). 
 This value is Bearer authentication token without `Bearer` keyword.
 It's `Required` only if `TW_API_KEY` and/or `TW_API_SECRET` are not defined
 (Ex: aUPcne0pfLNmBs8Va43FpVekt2uWIAMJ5lUM51VBzi6K8RLucLZ76oSSyNtZQekW)
 
--`TW_API_KEY` - (`Optional`) Represents the access key to the threatwinds endpoints URL (`TW_API_URL`).
-It's `Required` only if `TW_AUTHENTICATION` is not defined
+- `TW_API_KEY` - (`Optional`) Represents the access key to the threatwinds endpoints URL (`TW_API_URL`).
+It's `Required` only if `TW_AUTHENTICATION` is not defined.
 
--`TW_API_SECRET` - (`Optional`) Represents the access secret for threatwinds endpoints URL (`TW_API_URL`).
-It's `Required` only if `TW_AUTHENTICATION` is not defined
+- `TW_API_SECRET` - (`Optional`) Represents the access secret for threatwinds endpoints URL (`TW_API_URL`).
+It's `Required` only if `TW_AUTHENTICATION` is not defined.
 
--`TW_API_ENTITY_BASE_TYPE` - (`Optional`) Represents the base `type` field definition for a top level entity in case you don't have a field from origin to use (Ex: `threat`). 
-Defaults to `threat` if not defined
+- `TW_API_ENTITY_BASE_TYPE` - (`Optional`) Represents the base `type` field definition for a top level entity in case you don't have a field from origin to use (Ex: `threat`). 
+Defaults to `threat` if not defined.
 
--`TW_API_VERSION` - (`Optional`) Represents the base `version` of the endpoint api, defaults to `v1` if not defined  (Ex: `v1`)
+- `TW_API_VERSION` - (`Optional`) Represents the base `version` of the endpoint api, defaults to `v1` if not defined  (Ex: `v1`)
 
 ### Feed Types
 
@@ -48,15 +51,18 @@ but nothing will happen
 
 #### v1.0.0
 
--`OSINT_CIRCL` - Type for feed: https://www.circl.lu/doc/misp/feed-osint/
-
--`OSINT_BOTVRIJ` - Type for feed: https://www.botvrij.eu/data/feed-osint/
-
--`OSINT_DIJITAL_SIDE` - Type for feed: https://osint.digitalside.it/Threat-Intel/digitalside-misp-feed/
-
--`GITHUB_YARA` - Type for any github repository that holds yara rules. Used in this version for feed: https://github.com/Yara-Rules/rules
-
--`RFXN_YARA` - Type for feed: https://www.rfxn.com/downloads/rfxn.yara
+- `OSINT_CIRCL` - Type for feed: https://www.circl.lu/doc/misp/feed-osint/
+- `OSINT_BOTVRIJ` - Type for feed: https://www.botvrij.eu/data/feed-osint/
+- `OSINT_DIJITAL_SIDE` - Type for feed: https://osint.digitalside.it/Threat-Intel/digitalside-misp-feed/
+- `GITHUB_YARA` - Type for any github repository that holds yara rules. Used in this version for feed: https://github.com/Yara-Rules/rules
+- `RFXN_YARA` - Type for feed: https://www.rfxn.com/downloads/rfxn.yara
+- `GENERIC_IP_LIST` - Type for any feed that comes from a single raw file
+and holds only separated lines of IP addresses, without comments or header, 
+see tested list below:
+  - https://rules.emergingthreats.net/blockrules/compromised-ips.txt
+  - https://www.dan.me.uk/torlist/?exit
+  - https://www.dan.me.uk/torlist/
+- `ABUSE_SSLIP_BLACKLIST` - Type for feed: https://sslbl.abuse.ch/blacklist/sslipblacklist.csv
 
 ### Variables needed according to Feed Types
 
@@ -92,6 +98,14 @@ optionals are marked as `Optional`, if not assume that the variable is `Required
 - `RFXN_YARA`
   - `FEED_URL` - Value: https://www.rfxn.com/downloads/rfxn.yara
   - `FEED_FORMAT` - Value: `RFXN_YARA`
+- `GENERIC_IP_LIST`
+  - `FEED_URL` - Value: Any in the list of `GENERIC_IP_LIST` in [Feed Types](#feed-types) above
+  - `FEED_FORMAT` - Value: `GENERIC_IP_LIST`
+  - `FEED_BASE_REPUTATION` - (`Optional`) Value: Any value between -3 and 0 as you determine, any other value used will default to -1.
+- `ABUSE_SSLIP_BLACKLIST`
+  - `FEED_URL` - Value: https://sslbl.abuse.ch/blacklist/sslipblacklist.csv
+  - `FEED_FORMAT` - Value: `ABUSE_SSLIP_BLACKLIST`
+  - `FEED_BASE_REPUTATION` - (`Optional`) Value: Any value between -3 and 0 as you determine, any other value used will default to -1.
 
 ## Building for production
 

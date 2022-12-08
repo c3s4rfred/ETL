@@ -49,11 +49,10 @@ public class IPListJob implements IJobExecutor {
 
         // ----------------------- Log the feed scrap to search for links -------------------------//
         try {
-            // EMERGING_THREAT_NET_COMP_IPS, ABUSE_SSLIP_BLACKLIST are direct resource and don't have content-type, so, the feed url have to
+            // GENERIC_IP_LIST, ABUSE_SSLIP_BLACKLIST are direct resource and don't have content-type, so, the feed url have to
             // be inserted directly in the list of links
-            if (FeedTypeEnum.TYPE_EMERGING_THREAT_NET_COMP_IPS.getVarValue().compareToIgnoreCase(EnvironmentConfig.FEED_FORMAT) == 0 ||
-                    FeedTypeEnum.TYPE_ABUSE_SSLIP_BLACKLIST.getVarValue().compareToIgnoreCase(EnvironmentConfig.FEED_FORMAT) == 0 ||
-                    FeedTypeEnum.TYPE_DAN_ME_UK_TOR_LIST.getVarValue().compareToIgnoreCase(EnvironmentConfig.FEED_FORMAT) == 0) {
+            if (FeedTypeEnum.TYPE_GENERIC_IP_LIST.getVarValue().compareToIgnoreCase(EnvironmentConfig.FEED_FORMAT) == 0 ||
+                    FeedTypeEnum.TYPE_ABUSE_SSLIP_BLACKLIST.getVarValue().compareToIgnoreCase(EnvironmentConfig.FEED_FORMAT) == 0 ) {
                 LinkPage.getListOfLinks().add(EnvironmentConfig.FEED_URL);
             }
         } catch (Exception ex) {
