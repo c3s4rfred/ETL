@@ -79,6 +79,7 @@ see tested list below:
   - https://home.nuug.no/~peter/pop3gropers.txt
   - https://raw.githubusercontent.com/ktsaou/blocklist-ipsets/master/firehol_level1.netset
 - `FEODOTRACKER_IP_BLOCKLIST` - Type for feed: https://feodotracker.abuse.ch/downloads/ipblocklist.csv
+- `CYBERCURE_AI_IP` - Type for feed: https://api.cybercure.ai/feed/get_ips?type=csv
 
 ### Variables needed according to Feed Types
 
@@ -133,6 +134,10 @@ optionals are marked as `Optional`, if not assume that the variable is `Required
 - `FEODOTRACKER_IP_BLOCKLIST`
   - `FEED_URL` - Value: https://feodotracker.abuse.ch/downloads/ipblocklist.csv
   - `FEED_FORMAT` - Value: `FEODOTRACKER_IP_BLOCKLIST`
+  - `FEED_BASE_REPUTATION` - (`Optional`) Value: Any value between -3 and 0 as you determine, any other value used will default to -1.
+- `CYBERCURE_AI_IP`
+  - `FEED_URL` - Value: https://api.cybercure.ai/feed/get_ips?type=csv
+  - `FEED_FORMAT` - Value: `CYBERCURE_AI_IP`
   - `FEED_BASE_REPUTATION` - (`Optional`) Value: Any value between -3 and 0 as you determine, any other value used will default to -1.
 
 ## Building for production
