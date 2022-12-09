@@ -49,7 +49,8 @@ public class IPListJob implements IJobExecutor {
             if (FeedTypeEnum.TYPE_GENERIC_IP_LIST.getVarValue().compareToIgnoreCase(EnvironmentConfig.FEED_FORMAT) == 0 ||
                 FeedTypeEnum.TYPE_ABUSE_SSLIP_BLACKLIST.getVarValue().compareToIgnoreCase(EnvironmentConfig.FEED_FORMAT) == 0 ||
                 FeedTypeEnum.TYPE_COMMENT_IP_LIST.getVarValue().compareToIgnoreCase(EnvironmentConfig.FEED_FORMAT) == 0 ||
-                FeedTypeEnum.TYPE_REPUTATION_ALIEN_VAULT.getVarValue().compareToIgnoreCase(EnvironmentConfig.FEED_FORMAT) == 0) {
+                FeedTypeEnum.TYPE_REPUTATION_ALIEN_VAULT.getVarValue().compareToIgnoreCase(EnvironmentConfig.FEED_FORMAT) == 0 ||
+                FeedTypeEnum.TYPE_FEODOTRACKER_IP_BLOCKLIST.getVarValue().compareToIgnoreCase(EnvironmentConfig.FEED_FORMAT) == 0) {
                 LinkPage.getListOfLinks().add(EnvironmentConfig.FEED_URL);
             }
         } catch (Exception ex) {
@@ -108,7 +109,8 @@ public class IPListJob implements IJobExecutor {
                 // Because have comments beginning with # and or it is a csv
                 if (FeedTypeEnum.TYPE_ABUSE_SSLIP_BLACKLIST.getVarValue().compareToIgnoreCase(EnvironmentConfig.FEED_FORMAT) == 0 ||
                     FeedTypeEnum.TYPE_COMMENT_IP_LIST.getVarValue().compareToIgnoreCase(EnvironmentConfig.FEED_FORMAT) == 0 ||
-                    FeedTypeEnum.TYPE_REPUTATION_ALIEN_VAULT.getVarValue().compareToIgnoreCase(EnvironmentConfig.FEED_FORMAT) == 0) {
+                    FeedTypeEnum.TYPE_REPUTATION_ALIEN_VAULT.getVarValue().compareToIgnoreCase(EnvironmentConfig.FEED_FORMAT) == 0 ||
+                    FeedTypeEnum.TYPE_FEODOTRACKER_IP_BLOCKLIST.getVarValue().compareToIgnoreCase(EnvironmentConfig.FEED_FORMAT) == 0) {
                     dataFromFile = cleanList(dataFromFile);
                 }
 
@@ -153,7 +155,7 @@ public class IPListJob implements IJobExecutor {
         Iterator<String> it;
         for (it = origin.iterator(); it.hasNext(); ) {
             String attr = it.next().trim();
-            if (!attr.startsWith("#")) {
+            if (!attr.startsWith("#")&&attr.compareTo("")!=0) {
                 if (FeedTypeEnum.TYPE_ABUSE_SSLIP_BLACKLIST.getVarValue().compareToIgnoreCase(EnvironmentConfig.FEED_FORMAT) == 0 ) {
                     String[] arrayCSV = attr.split(",");
                     cleanedList.add(arrayCSV[1].trim());
@@ -164,6 +166,13 @@ public class IPListJob implements IJobExecutor {
                 if (FeedTypeEnum.TYPE_REPUTATION_ALIEN_VAULT.getVarValue().compareToIgnoreCase(EnvironmentConfig.FEED_FORMAT) == 0) {
                     String[] arrayIP = attr.split("#");
                     cleanedList.add(arrayIP[0].trim());
+                }
+                if (FeedTypeEnum.TYPE_FEODOTRACKER_IP_BLOCKLIST.getVarValue().compareToIgnoreCase(EnvironmentConfig.FEED_FORMAT) == 0 ) {
+                    attr = attr.replace("\"","");
+                    if (!attr.startsWith("first_seen")) {
+                        String[] arrayCSV = attr.split(",");
+                        cleanedList.add(arrayCSV[1].trim());
+                    }
                 }
             }
         }
