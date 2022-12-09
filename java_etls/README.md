@@ -72,6 +72,7 @@ see tested list below:
   - https://www.dan.me.uk/torlist/?exit
   - https://www.dan.me.uk/torlist/
 - `ABUSE_SSLIP_BLACKLIST` - Type for feed: https://sslbl.abuse.ch/blacklist/sslipblacklist.csv
+- `REPUTATION_ALIEN_VAULT` - Type for feed: https://reputation.alienvault.com/reputation.generic
 - `COMMENT_IP_LIST` - Type for any feed that comes from a single raw file
   and holds only separated lines of IP addresses or segments, with comments,
   see tested list below:
@@ -122,7 +123,11 @@ optionals are marked as `Optional`, if not assume that the variable is `Required
   - `FEED_BASE_REPUTATION` - (`Optional`) Value: Any value between -3 and 0 as you determine, any other value used will default to -1.
 - `COMMENT_IP_LIST`
   - `FEED_URL` - Value: Any in the list of `COMMENT_IP_LIST` in [Feed Types](#feed-types) above
-  - `FEED_FORMAT` - Value: `NUUG_POP3_GROPERS`
+  - `FEED_FORMAT` - Value: `COMMENT_IP_LIST`
+  - `FEED_BASE_REPUTATION` - (`Optional`) Value: Any value between -3 and 0 as you determine, any other value used will default to -1.
+- `REPUTATION_ALIEN_VAULT`
+  - `FEED_URL` - Value: https://reputation.alienvault.com/reputation.generic
+  - `FEED_FORMAT` - Value: `REPUTATION_ALIEN_VAULT`
   - `FEED_BASE_REPUTATION` - (`Optional`) Value: Any value between -3 and 0 as you determine, any other value used will default to -1.
 
 ## Building for production
