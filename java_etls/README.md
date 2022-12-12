@@ -81,6 +81,10 @@ see tested list below:
 - `FEODOTRACKER_IP_BLOCKLIST` - Type for feed: https://feodotracker.abuse.ch/downloads/ipblocklist.csv
 - `CYBERCURE_AI_IP` - Type for feed: https://api.cybercure.ai/feed/get_ips?type=csv
 - `MALSILO_IP_LIST` - Type for feed: https://malsilo.gitlab.io/feeds/dumps/ip_list.txt
+- `GENERIC_URL_LIST` - Type for any feed that comes from a single raw file
+  and holds only separated lines of URLs, without comments or header,
+  see tested list below:
+  - https://cybercrime-tracker.net/all.php
 
 ### Variables needed according to Feed Types
 

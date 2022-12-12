@@ -20,6 +20,7 @@ import utm.threatintelligence.readers.FileStreamReader;
 import utm.threatintelligence.scraper.LinkPage;
 import utm.threatintelligence.urlcreator.FullPathUrlCreator;
 
+import java.io.FileOutputStream;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -270,6 +271,19 @@ public class ElementListJob implements IJobExecutor {
                     ElementWithAssociations element = new ElementWithAssociations(commonEObject, new ArrayList<>());
                     cleanedList.add(element);
                 }
+                if (FeedTypeEnum.TYPE_GENERIC_URL_LIST.getVarValue().compareToIgnoreCase(EnvironmentConfig.FEED_FORMAT) == 0){
+                    // Generating default protocol if not exists
+                    if (attr.matches("(.+)(https|http)(://)(.+)")) {
+                        attr = attr.replaceFirst("(.+)(https|http)", "$2");
+                    } else if (!attr.matches("^(https|http)(://)(.+)")) {
+                        attr = "https://" + attr;
+                    }
+                    CommonEntityObject commonEObject = new CommonEntityObject(TWAttributeTypesEnum.TYPE_URL.getValueType(),
+                            attr, EnvironmentConfig.FEED_THREAT_DESCRIPTION,
+                            EnvironmentConfig.FEED_BASE_REPUTATION);
+                    ElementWithAssociations element = new ElementWithAssociations(commonEObject, new ArrayList<>());
+                    cleanedList.add(element);
+                }
             }
         }
         return cleanedList;
@@ -277,6 +291,7 @@ public class ElementListJob implements IJobExecutor {
 
     // Method to fill the ListDirectLinkFeeds
     public static void FillListOfDirectLinkFeeds() {
+        // IP feeds
         listDirectLinkFeeds.add(FeedTypeEnum.TYPE_GENERIC_IP_LIST.getVarValue());
         listDirectLinkFeeds.add(FeedTypeEnum.TYPE_ABUSE_SSLIP_BLACKLIST.getVarValue());
         listDirectLinkFeeds.add(FeedTypeEnum.TYPE_COMMENT_IP_LIST.getVarValue());
@@ -285,6 +300,8 @@ public class ElementListJob implements IJobExecutor {
         listDirectLinkFeeds.add(FeedTypeEnum.TYPE_CYBERCURE_AI_IP.getVarValue());
         listDirectLinkFeeds.add(FeedTypeEnum.TYPE_IP_SPAM_LIST.getVarValue());
         listDirectLinkFeeds.add(FeedTypeEnum.TYPE_MALSILO_IP_LIST.getVarValue());
+        // URL feeds
+        listDirectLinkFeeds.add(FeedTypeEnum.TYPE_GENERIC_URL_LIST.getVarValue());
     }
 
     // Method to know if FEED_FORMAT value is an IP feed, direct link

@@ -34,6 +34,8 @@ public class FromElementListToEntity implements ITransform {
                 String finalType = "";
                 if (principal.getType().compareTo(TWAttributeTypesEnum.TYPE_IP.getValueType()) == 0) {
                     finalType = (principal.getValue().contains("/")) ? TWAttributeTypesEnum.TYPE_CIDR.getValueType() : TWAttributeTypesEnum.TYPE_IP.getValueType();
+                } else {
+                    finalType = principal.getType();
                 }
                 ThreatIntEntity threatIntEntity = new ThreatIntEntity(
                         finalType,
