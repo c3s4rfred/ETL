@@ -6,7 +6,7 @@ import utm.sdk.threatwinds.enums.TWEndPointEnum;
 import utm.sdk.threatwinds.factory.RequestFactory;
 import utm.sdk.threatwinds.interfaces.IRequestExecutor;
 import utm.threatintelligence.config.EnvironmentConfig;
-import utm.threatintelligence.entity.ein.common.IPListObject;
+import utm.threatintelligence.entity.ein.common.GenericListObject;
 import utm.threatintelligence.entity.transform.transf.FromIPListToEntity;
 import utm.threatintelligence.enums.FeedTypeEnum;
 import utm.threatintelligence.enums.FlowPhasesEnum;
@@ -18,7 +18,6 @@ import utm.threatintelligence.readers.FileStreamReader;
 import utm.threatintelligence.scraper.LinkPage;
 import utm.threatintelligence.urlcreator.FullPathUrlCreator;
 
-import java.io.FileOutputStream;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -29,13 +28,16 @@ import java.util.concurrent.TimeUnit;
 public class IPListJob implements IJobExecutor {
     private final Logger log = LoggerFactory.getLogger(IPListJob.class);
     private static final String CLASSNAME = "IPListJob";
+    static List<String> ipListDirectLinkFeeds;
 
     public IPListJob() {
+        this.ipListDirectLinkFeeds = new ArrayList<>();
+        FillIpListDirectLinkFeeds();
     }
 
     @Override
     public void executeFlow() throws Exception {
-        final String ctx = CLASSNAME + ".executeGitHubYara";
+        final String ctx = CLASSNAME + ".executeIPList";
         String feedSelected = EnvironmentConfig.FEED_FORMAT;
 
         // ----------------------- Log the process init -------------------------//
@@ -46,14 +48,7 @@ public class IPListJob implements IJobExecutor {
         try {
             // Those FEED_FORMAT below are direct resource and don't have content-type, so, the feed url have to
             // be inserted directly in the list of links
-            if (FeedTypeEnum.TYPE_GENERIC_IP_LIST.getVarValue().compareToIgnoreCase(EnvironmentConfig.FEED_FORMAT) == 0 ||
-                FeedTypeEnum.TYPE_ABUSE_SSLIP_BLACKLIST.getVarValue().compareToIgnoreCase(EnvironmentConfig.FEED_FORMAT) == 0 ||
-                FeedTypeEnum.TYPE_COMMENT_IP_LIST.getVarValue().compareToIgnoreCase(EnvironmentConfig.FEED_FORMAT) == 0 ||
-                FeedTypeEnum.TYPE_REPUTATION_ALIEN_VAULT.getVarValue().compareToIgnoreCase(EnvironmentConfig.FEED_FORMAT) == 0 ||
-                FeedTypeEnum.TYPE_FEODOTRACKER_IP_BLOCKLIST.getVarValue().compareToIgnoreCase(EnvironmentConfig.FEED_FORMAT) == 0 ||
-                FeedTypeEnum.TYPE_CYBERCURE_AI_IP.getVarValue().compareToIgnoreCase(EnvironmentConfig.FEED_FORMAT) == 0 ||
-                FeedTypeEnum.TYPE_IP_SPAM_LIST.getVarValue().compareToIgnoreCase(EnvironmentConfig.FEED_FORMAT) == 0 ||
-                FeedTypeEnum.TYPE_MALSILO_IP_LIST.getVarValue().compareToIgnoreCase(EnvironmentConfig.FEED_FORMAT) == 0) {
+            if (isIPDirectLink()) {
                 LinkPage.getListOfLinks().add(EnvironmentConfig.FEED_URL);
             }
         } catch (Exception ex) {
@@ -110,13 +105,7 @@ public class IPListJob implements IJobExecutor {
                 );
                 // ----------------------- Cleaning the list if is one of below --------------------//
                 // Because have comments beginning with # and or it is a csv, or have headers, or empty lines
-                if (FeedTypeEnum.TYPE_ABUSE_SSLIP_BLACKLIST.getVarValue().compareToIgnoreCase(EnvironmentConfig.FEED_FORMAT) == 0 ||
-                    FeedTypeEnum.TYPE_COMMENT_IP_LIST.getVarValue().compareToIgnoreCase(EnvironmentConfig.FEED_FORMAT) == 0 ||
-                    FeedTypeEnum.TYPE_REPUTATION_ALIEN_VAULT.getVarValue().compareToIgnoreCase(EnvironmentConfig.FEED_FORMAT) == 0 ||
-                    FeedTypeEnum.TYPE_FEODOTRACKER_IP_BLOCKLIST.getVarValue().compareToIgnoreCase(EnvironmentConfig.FEED_FORMAT) == 0 ||
-                    FeedTypeEnum.TYPE_CYBERCURE_AI_IP.getVarValue().compareToIgnoreCase(EnvironmentConfig.FEED_FORMAT) == 0 ||
-                    FeedTypeEnum.TYPE_IP_SPAM_LIST.getVarValue().compareToIgnoreCase(EnvironmentConfig.FEED_FORMAT) == 0 ||
-                    FeedTypeEnum.TYPE_MALSILO_IP_LIST.getVarValue().compareToIgnoreCase(EnvironmentConfig.FEED_FORMAT) == 0) {
+                if (isIPListToBeCleaned()) {
                     dataFromFile = cleanList(dataFromFile);
                 }
 
@@ -124,7 +113,7 @@ public class IPListJob implements IJobExecutor {
                 log.info(ctx + ": " + new LogDef(LogTypeEnum.TYPE_EXECUTION.getVarValue(), linkToProcess,
                         FlowPhasesEnum.P2_MAP_JSON_TO_CLASS.getVarValue()).logDefToString());
 
-                IPListObject ipListObject = new IPListObject(dataFromFile, EnvironmentConfig.FEED_THREAT_DESCRIPTION,
+                GenericListObject ipListObject = new GenericListObject(dataFromFile, EnvironmentConfig.FEED_THREAT_DESCRIPTION,
                         EnvironmentConfig.FEED_BASE_REPUTATION);
 
                 // ----------------------- Log and execute transformation to Entity class -------------------------//
@@ -205,5 +194,35 @@ public class IPListJob implements IJobExecutor {
             }
         }
         return cleanedList;
+    }
+
+    // Method to fill the ipListDirectLinkFeeds
+    public static void FillIpListDirectLinkFeeds (){
+        ipListDirectLinkFeeds.add(FeedTypeEnum.TYPE_GENERIC_IP_LIST.getVarValue());
+        ipListDirectLinkFeeds.add(FeedTypeEnum.TYPE_ABUSE_SSLIP_BLACKLIST.getVarValue());
+        ipListDirectLinkFeeds.add(FeedTypeEnum.TYPE_COMMENT_IP_LIST.getVarValue());
+        ipListDirectLinkFeeds.add(FeedTypeEnum.TYPE_REPUTATION_ALIEN_VAULT.getVarValue());
+        ipListDirectLinkFeeds.add(FeedTypeEnum.TYPE_FEODOTRACKER_IP_BLOCKLIST.getVarValue());
+        ipListDirectLinkFeeds.add(FeedTypeEnum.TYPE_CYBERCURE_AI_IP.getVarValue());
+        ipListDirectLinkFeeds.add(FeedTypeEnum.TYPE_IP_SPAM_LIST.getVarValue());
+        ipListDirectLinkFeeds.add(FeedTypeEnum.TYPE_MALSILO_IP_LIST.getVarValue());
+    }
+
+    // Method to know if FEED_FORMAT value is an IP feed, direct link
+    public boolean isIPDirectLink () {
+        Iterator<String> it;
+        for (it = ipListDirectLinkFeeds.iterator(); it.hasNext(); ) {
+            String attr = it.next();
+            if (attr.compareToIgnoreCase(EnvironmentConfig.FEED_FORMAT) == 0 ) {
+                return true;
+            }
+        }
+        return false;
+    }
+    public boolean isIPListToBeCleaned(){
+        if (isIPDirectLink()&&EnvironmentConfig.FEED_FORMAT.compareTo(FeedTypeEnum.TYPE_GENERIC_IP_LIST.getVarValue())!=0){
+            return true;
+        }
+        return false;
     }
 }

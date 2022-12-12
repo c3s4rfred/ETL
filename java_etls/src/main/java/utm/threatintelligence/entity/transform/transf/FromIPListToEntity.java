@@ -2,8 +2,7 @@ package utm.threatintelligence.entity.transform.transf;
 
 import utm.sdk.threatwinds.entity.ein.ThreatIntEntity;
 import utm.threatintelligence.config.EnvironmentConfig;
-import utm.threatintelligence.entity.ein.common.IPListObject;
-import utm.threatintelligence.entity.ein.osint.circl.OCAttribute;
+import utm.threatintelligence.entity.ein.common.GenericListObject;
 import utm.threatintelligence.enums.TWAttributeTypesEnum;
 import utm.threatintelligence.interfaces.ITransform;
 
@@ -21,8 +20,8 @@ public class FromIPListToEntity implements ITransform {
 
     @Override
     public <T> T transform(T origin, T destination) throws Exception {
-        if (origin instanceof IPListObject) {
-           List<String> ipListObject = ((IPListObject) origin).getIpAddr();
+        if (origin instanceof GenericListObject) {
+           List<String> ipListObject = ((GenericListObject) origin).getStringList();
             Iterator<String> it;
 
             for (it = ipListObject.iterator(); it.hasNext();) {
