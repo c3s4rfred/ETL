@@ -76,9 +76,9 @@ func main() {
 	}
 
 	files := map[string][]string{
-		"mdb": {"daily.mdb", "main.mdb"},
-		"hdb": {"daily.hdb", "main.hdb"},
-		"hsb": {"daily.hsb", "main.hsb"},
+		"mdb": {"daily.mdb"},
+		"hdb": {"daily.hdb"},
+		"hsb": {"daily.hsb"},
 	}
 
 	for kind, elements := range files {
