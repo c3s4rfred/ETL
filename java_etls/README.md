@@ -94,9 +94,14 @@ see tested list below:
   see tested list below:
   - https://cybercrime-tracker.net/all.php
   - https://openphish.com/feed.txt
+  - https://cybercrime-tracker.net/ccamgate.php
+  - https://gitlab.com/ZeroDot1/CoinBlockerLists/raw/master/list.txt?inline=false
+  - https://gitlab.com/ZeroDot1/CoinBlockerLists/raw/master/list_optional.txt?inline=false
+  - https://gitlab.com/ZeroDot1/CoinBlockerLists/raw/master/list_browser.txt?inline=false
 - `PHISHTANK_ONLINE_URL_LIST` - Type for feed: https://data.phishtank.com/data/online-valid.csv
 - `DIAMOND_FOX_URL_LIST` - Type for feed: https://raw.githubusercontent.com/pan-unit42/iocs/master/diamondfox/diamondfox_panels.txt
 - `VXVAULT_URL_LIST` - Type for feed: http://vxvault.net/URL_List.php
+- `CYBERCURE_AI_URL_LIST` - Type for feed: https://api.cybercure.ai/feed/get_url?type=csv
 
 ### Variables needed according to Feed Types
 
@@ -175,6 +180,10 @@ optionals are marked as `Optional`, if not assume that the variable is `Required
 - `VXVAULT_URL_LIST`
   - `FEED_URL` - Value: http://vxvault.net/URL_List.php
   - `FEED_FORMAT` - Value: `VXVAULT_URL_LIST`
+  - `FEED_BASE_REPUTATION` - (`Optional`) Value: Any value between -3 and 0 as you determine, any other value used will default to -1.
+- `CYBERCURE_AI_URL_LIST`
+  - `FEED_URL` - Value: https://api.cybercure.ai/feed/get_url?type=csv
+  - `FEED_FORMAT` - Value: `CYBERCURE_AI_URL_LIST`
   - `FEED_BASE_REPUTATION` - (`Optional`) Value: Any value between -3 and 0 as you determine, any other value used will default to -1.
 
 ## Building for production
