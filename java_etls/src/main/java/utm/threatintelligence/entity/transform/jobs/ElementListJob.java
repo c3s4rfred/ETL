@@ -154,7 +154,7 @@ public class ElementListJob implements IJobExecutor {
                 if (FeedTypeEnum.TYPE_GENERIC_IP_LIST.getVarValue().compareToIgnoreCase(EnvironmentConfig.FEED_FORMAT) == 0 ||
                         FeedTypeEnum.TYPE_COMMENT_IP_LIST.getVarValue().compareToIgnoreCase(EnvironmentConfig.FEED_FORMAT) == 0) {
                     CommonEntityObject commonEObject = new CommonEntityObject(TWAttributeTypesEnum.TYPE_IP.getValueType(),
-                            attr, EnvironmentConfig.FEED_THREAT_DESCRIPTION,
+                            generateProtocol(attr), EnvironmentConfig.FEED_THREAT_DESCRIPTION,
                             EnvironmentConfig.FEED_BASE_REPUTATION);
                     ElementWithAssociations element = new ElementWithAssociations(commonEObject, new ArrayList<>());
                     cleanedList.add(element);
@@ -243,6 +243,15 @@ public class ElementListJob implements IJobExecutor {
                         cleanedList.add(element);
                     }
                 }
+                if (FeedTypeEnum.TYPE_DIAMOND_FOX_URL_LIST.getVarValue().compareToIgnoreCase(EnvironmentConfig.FEED_FORMAT) == 0){
+                        String[] arrayCSV = attr.split(",");
+                        // With generation of default protocol if not exists
+                        CommonEntityObject commonEObject = new CommonEntityObject(TWAttributeTypesEnum.TYPE_URL.getValueType(),
+                                generateProtocol(arrayCSV[0].trim()), EnvironmentConfig.FEED_THREAT_DESCRIPTION,
+                                EnvironmentConfig.FEED_BASE_REPUTATION);
+                        ElementWithAssociations element = new ElementWithAssociations(commonEObject, new ArrayList<>());
+                        cleanedList.add(element);
+                }
             }
         }
         return cleanedList;
@@ -262,6 +271,7 @@ public class ElementListJob implements IJobExecutor {
         // URL feeds
         listDirectLinkFeeds.add(FeedTypeEnum.TYPE_GENERIC_URL_LIST.getVarValue());
         listDirectLinkFeeds.add(FeedTypeEnum.TYPE_PHISHTANK_ONLINE_URL_LIST.getVarValue());
+        listDirectLinkFeeds.add(FeedTypeEnum.TYPE_DIAMOND_FOX_URL_LIST.getVarValue());
     }
 
     // Method to know if FEED_FORMAT value is an IP feed, direct link

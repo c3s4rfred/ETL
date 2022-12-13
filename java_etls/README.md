@@ -94,6 +94,7 @@ see tested list below:
   see tested list below:
   - https://cybercrime-tracker.net/all.php
 - `PHISHTANK_ONLINE_URL_LIST` - Type for feed: https://data.phishtank.com/data/online-valid.csv
+- `DIAMOND_FOX_URL_LIST` - Type for feed: https://raw.githubusercontent.com/pan-unit42/iocs/master/diamondfox/diamondfox_panels.txt
 
 ### Variables needed according to Feed Types
 
@@ -165,6 +166,10 @@ optionals are marked as `Optional`, if not assume that the variable is `Required
   - `FEED_URL` - Value: https://data.phishtank.com/data/online-valid.csv
   - `FEED_FORMAT` - Value: `PHISHTANK_ONLINE_URL_LIST`
   - `FEED_BASE_REPUTATION` - (`Optional`) Value: Any value between -3 and 0 as you determine, any other value used will default to -1.
+- `DIAMOND_FOX_URL_LIST`
+  - `FEED_URL` - Value: https://raw.githubusercontent.com/pan-unit42/iocs/master/diamondfox/diamondfox_panels.txt
+  - `FEED_FORMAT` - Value: `DIAMOND_FOX_URL_LIST`
+  - `FEED_BASE_REPUTATION` - (`Optional`) Value: Any value between -3 and 0 as you determine, any other value used will default to -1. 
 
 ## Building for production
 
