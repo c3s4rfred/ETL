@@ -5,8 +5,6 @@ import utm.sdk.threatwinds.entity.ein.ThreatIntEntity;
 import utm.threatintelligence.config.EnvironmentConfig;
 import utm.threatintelligence.entity.ein.common.CommonEntityObject;
 import utm.threatintelligence.entity.ein.common.ElementWithAssociations;
-import utm.threatintelligence.entity.ein.common.GenericListObject;
-import utm.threatintelligence.entity.ein.osint.circl.OCObject;
 import utm.threatintelligence.enums.TWAttributeTypesEnum;
 import utm.threatintelligence.interfaces.ITransform;
 

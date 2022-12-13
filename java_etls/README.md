@@ -71,6 +71,14 @@ see tested list below:
   - https://rules.emergingthreats.net/blockrules/compromised-ips.txt
   - https://www.dan.me.uk/torlist/?exit
   - https://www.dan.me.uk/torlist/
+  - https://raw.githubusercontent.com/stamparm/ipsum/master/levels/1.txt
+  - https://raw.githubusercontent.com/stamparm/ipsum/master/levels/2.txt
+  - https://raw.githubusercontent.com/stamparm/ipsum/master/levels/3.txt
+  - https://raw.githubusercontent.com/stamparm/ipsum/master/levels/4.txt
+  - https://raw.githubusercontent.com/stamparm/ipsum/master/levels/5.txt
+  - https://raw.githubusercontent.com/stamparm/ipsum/master/levels/6.txt
+  - https://raw.githubusercontent.com/stamparm/ipsum/master/levels/7.txt
+  - https://raw.githubusercontent.com/stamparm/ipsum/master/levels/8.txt
 - `ABUSE_SSLIP_BLACKLIST` - Type for feed: https://sslbl.abuse.ch/blacklist/sslipblacklist.csv
 - `REPUTATION_ALIEN_VAULT` - Type for feed: https://reputation.alienvault.com/reputation.generic
 - `COMMENT_IP_LIST` - Type for any feed that comes from a single raw file
@@ -85,6 +93,7 @@ see tested list below:
   and holds only separated lines of URLs, without comments or header,
   see tested list below:
   - https://cybercrime-tracker.net/all.php
+- `PHISHTANK_ONLINE_URL_LIST` - Type for feed: https://data.phishtank.com/data/online-valid.csv
 
 ### Variables needed according to Feed Types
 
@@ -147,6 +156,14 @@ optionals are marked as `Optional`, if not assume that the variable is `Required
 - `MALSILO_IP_LIST`
   - `FEED_URL` - Value: https://malsilo.gitlab.io/feeds/dumps/ip_list.txt
   - `FEED_FORMAT` - Value: `MALSILO_IP_LIST`
+  - `FEED_BASE_REPUTATION` - (`Optional`) Value: Any value between -3 and 0 as you determine, any other value used will default to -1.
+- `GENERIC_URL_LIST`
+  - `FEED_URL` - Value: Any in the list of `GENERIC_URL_LIST` in [Feed Types](#feed-types) above
+  - `FEED_FORMAT` - Value: `GENERIC_URL_LIST`
+  - `FEED_BASE_REPUTATION` - (`Optional`) Value: Any value between -3 and 0 as you determine, any other value used will default to -1.
+- `PHISHTANK_ONLINE_URL_LIST`
+  - `FEED_URL` - Value: https://data.phishtank.com/data/online-valid.csv
+  - `FEED_FORMAT` - Value: `PHISHTANK_ONLINE_URL_LIST`
   - `FEED_BASE_REPUTATION` - (`Optional`) Value: Any value between -3 and 0 as you determine, any other value used will default to -1.
 
 ## Building for production

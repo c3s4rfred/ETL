@@ -143,58 +143,6 @@ public class ElementListJob implements IJobExecutor {
         }
     }
 
-    public static List<String> cleanList(List<String> origin) {
-        // Do different cleaning process for different feeds
-        List<String> cleanedList = new ArrayList<>();
-        Iterator<String> it;
-        for (it = origin.iterator(); it.hasNext(); ) {
-            String attr = it.next().trim();
-            if (!attr.startsWith("#") && attr.compareTo("") != 0) {
-                if (FeedTypeEnum.TYPE_ABUSE_SSLIP_BLACKLIST.getVarValue().compareToIgnoreCase(EnvironmentConfig.FEED_FORMAT) == 0) {
-                    String[] arrayCSV = attr.split(",");
-                    cleanedList.add(arrayCSV[1].trim());
-                }
-                if (FeedTypeEnum.TYPE_COMMENT_IP_LIST.getVarValue().compareToIgnoreCase(EnvironmentConfig.FEED_FORMAT) == 0) {
-                    cleanedList.add(attr);
-                }
-                if (FeedTypeEnum.TYPE_REPUTATION_ALIEN_VAULT.getVarValue().compareToIgnoreCase(EnvironmentConfig.FEED_FORMAT) == 0) {
-                    String[] arrayIP = attr.split("#");
-                    cleanedList.add(arrayIP[0].trim());
-                }
-                if (FeedTypeEnum.TYPE_FEODOTRACKER_IP_BLOCKLIST.getVarValue().compareToIgnoreCase(EnvironmentConfig.FEED_FORMAT) == 0) {
-                    attr = attr.replace("\"", "");
-                    if (!attr.startsWith("first_seen")) {
-                        String[] arrayCSV = attr.split(",");
-                        cleanedList.add(arrayCSV[1].trim());
-                    }
-                }
-                if (FeedTypeEnum.TYPE_CYBERCURE_AI_IP.getVarValue().compareToIgnoreCase(EnvironmentConfig.FEED_FORMAT) == 0) {
-                    String[] array = attr.split(",");
-                    for (int i = 0; i < array.length; i++) {
-                        String tempIp = array[i].trim();
-                        if (attr.compareTo("") != 0) {
-                            cleanedList.add(tempIp);
-                        }
-                    }
-                }
-                if (FeedTypeEnum.TYPE_IP_SPAM_LIST.getVarValue().compareToIgnoreCase(EnvironmentConfig.FEED_FORMAT) == 0) {
-                    attr = attr.replace("\"", "");
-                    if (!attr.startsWith("first_seen")) {
-                        String[] arrayCSV = attr.split(",");
-                        cleanedList.add(arrayCSV[2].trim());
-                    }
-                }
-                if (FeedTypeEnum.TYPE_MALSILO_IP_LIST.getVarValue().compareToIgnoreCase(EnvironmentConfig.FEED_FORMAT) == 0) {
-                    attr = attr.replace("\"", "");
-                    String[] arrayCSV = attr.split(",");
-                    // Second split is because the field value is ip:port
-                    cleanedList.add(arrayCSV[2].split(":")[0].trim());
-                }
-            }
-        }
-        return cleanedList;
-    }
-
     public static List<ElementWithAssociations> createElemWithAssocList(List<String> origin) {
         // Do different cleaning process for different feeds
         List<ElementWithAssociations> cleanedList = new ArrayList<>();
@@ -202,6 +150,7 @@ public class ElementListJob implements IJobExecutor {
         for (it = origin.iterator(); it.hasNext(); ) {
             String attr = it.next().trim();
             if (!attr.startsWith("#") && attr.compareTo("") != 0) {
+                // IP lists
                 if (FeedTypeEnum.TYPE_GENERIC_IP_LIST.getVarValue().compareToIgnoreCase(EnvironmentConfig.FEED_FORMAT) == 0 ||
                         FeedTypeEnum.TYPE_COMMENT_IP_LIST.getVarValue().compareToIgnoreCase(EnvironmentConfig.FEED_FORMAT) == 0) {
                     CommonEntityObject commonEObject = new CommonEntityObject(TWAttributeTypesEnum.TYPE_IP.getValueType(),
@@ -271,18 +220,28 @@ public class ElementListJob implements IJobExecutor {
                     ElementWithAssociations element = new ElementWithAssociations(commonEObject, new ArrayList<>());
                     cleanedList.add(element);
                 }
+                // URL lists
                 if (FeedTypeEnum.TYPE_GENERIC_URL_LIST.getVarValue().compareToIgnoreCase(EnvironmentConfig.FEED_FORMAT) == 0){
                     // Generating default protocol if not exists
-                    if (attr.matches("(.+)(https|http)(://)(.+)")) {
-                        attr = attr.replaceFirst("(.+)(https|http)", "$2");
-                    } else if (!attr.matches("^(https|http)(://)(.+)")) {
-                        attr = "https://" + attr;
-                    }
+                    attr = generateProtocol(attr);
+
                     CommonEntityObject commonEObject = new CommonEntityObject(TWAttributeTypesEnum.TYPE_URL.getValueType(),
                             attr, EnvironmentConfig.FEED_THREAT_DESCRIPTION,
                             EnvironmentConfig.FEED_BASE_REPUTATION);
                     ElementWithAssociations element = new ElementWithAssociations(commonEObject, new ArrayList<>());
                     cleanedList.add(element);
+                }
+                if (FeedTypeEnum.TYPE_PHISHTANK_ONLINE_URL_LIST.getVarValue().compareToIgnoreCase(EnvironmentConfig.FEED_FORMAT) == 0){
+                    // Phishtank feed csv data lines begins with the phish_id
+                    if (attr.matches("^(\\d+)(.+)")) {
+                        String[] arrayCSV = attr.split(",");
+                        // With generation of default protocol if not exists
+                        CommonEntityObject commonEObject = new CommonEntityObject(TWAttributeTypesEnum.TYPE_URL.getValueType(),
+                                generateProtocol(arrayCSV[1].trim()), EnvironmentConfig.FEED_THREAT_DESCRIPTION,
+                                EnvironmentConfig.FEED_BASE_REPUTATION);
+                        ElementWithAssociations element = new ElementWithAssociations(commonEObject, new ArrayList<>());
+                        cleanedList.add(element);
+                    }
                 }
             }
         }
@@ -302,6 +261,7 @@ public class ElementListJob implements IJobExecutor {
         listDirectLinkFeeds.add(FeedTypeEnum.TYPE_MALSILO_IP_LIST.getVarValue());
         // URL feeds
         listDirectLinkFeeds.add(FeedTypeEnum.TYPE_GENERIC_URL_LIST.getVarValue());
+        listDirectLinkFeeds.add(FeedTypeEnum.TYPE_PHISHTANK_ONLINE_URL_LIST.getVarValue());
     }
 
     // Method to know if FEED_FORMAT value is an IP feed, direct link
@@ -314,5 +274,16 @@ public class ElementListJob implements IJobExecutor {
             }
         }
         return false;
+    }
+    // Method to check if protocol is present, if not, generates https by default
+    public static String generateProtocol(String value){
+        if (value.matches("(.+)(https|http)(://)(.+)")) {
+            value = value.replaceFirst("(.+)(https|http)", "$2");
+        } else if (!value.matches("^(https|http)(://)(.+)")) {
+            value = "https://" + value;
+        }
+        // Replacing security protocol
+        value = value.replaceFirst("hxxp","http");
+        return value;
     }
 }
