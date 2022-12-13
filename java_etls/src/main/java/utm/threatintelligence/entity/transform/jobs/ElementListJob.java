@@ -127,16 +127,11 @@ public class ElementListJob implements IJobExecutor {
                         FlowPhasesEnum.P4_MAP_ENTITY_TO_JSON.getVarValue()).logDefToString());
 
                 // ----------------------- Inserting via sdk -------------------------//
-                /*IRequestExecutor mainJob = new RequestFactory(500).getExecutor();
+                IRequestExecutor mainJob = new RequestFactory(500).getExecutor();
                 if (mainJob != null) {
                     String output = (String) mainJob.executeRequest(TWEndPointEnum.POST_ENTITIES.get(), fromElementListToEntity.getThreatIntEntityList());
                     log.info(ctx + " " + linkToProcess + ": " + output);
-                }*/
-                String stb = gp.parseTo(fromElementListToEntity.getThreatIntEntityList());
-
-                FileOutputStream fos = new FileOutputStream("D:/USUARIOS/FREDDY/Work/UTMStack/Threat_Intelligence/Test/TestX/vxvault.json");
-                fos.write(stb.getBytes());
-                fos.close();
+                }
 
                 log.info(ctx + ": " + new LogDef(LogTypeEnum.TYPE_EXECUTION.getVarValue(), linkToProcess,
                         FlowPhasesEnum.P5_END_FILE_PROCESS.getVarValue()).logDefToString());
@@ -267,6 +262,29 @@ public class ElementListJob implements IJobExecutor {
                         cleanedList.add(element);
                     }
                 }
+                if (FeedTypeEnum.TYPE_CYBERCURE_AI_URL_LIST.getVarValue().compareToIgnoreCase(EnvironmentConfig.FEED_FORMAT) == 0) {
+                    String[] array = attr.split(",");
+                    for (int i = 0; i < array.length; i++) {
+                        String tempIp = array[i].trim();
+                        if (attr.compareTo("") != 0) {
+                            CommonEntityObject commonEObject = new CommonEntityObject(TWAttributeTypesEnum.TYPE_URL.getValueType(),
+                                    generateProtocol(tempIp), EnvironmentConfig.FEED_THREAT_DESCRIPTION,
+                                    EnvironmentConfig.FEED_BASE_REPUTATION);
+                            ElementWithAssociations element = new ElementWithAssociations(commonEObject, new ArrayList<>());
+                            cleanedList.add(element);
+                        }
+                    }
+                }
+                if (FeedTypeEnum.TYPE_MALSILO_URL_LIST.getVarValue().compareToIgnoreCase(EnvironmentConfig.FEED_FORMAT) == 0) {
+                    attr = attr.replace("\"", "");
+                    String[] arrayCSV = attr.split(",");
+                    // Second split is because the field value is ip:port
+                    CommonEntityObject commonEObject = new CommonEntityObject(TWAttributeTypesEnum.TYPE_URL.getValueType(),
+                            generateProtocol(arrayCSV[2].trim()), EnvironmentConfig.FEED_THREAT_DESCRIPTION,
+                            EnvironmentConfig.FEED_BASE_REPUTATION);
+                    ElementWithAssociations element = new ElementWithAssociations(commonEObject, new ArrayList<>());
+                    cleanedList.add(element);
+                }
             }
         }
         return cleanedList;
@@ -288,6 +306,8 @@ public class ElementListJob implements IJobExecutor {
         listDirectLinkFeeds.add(FeedTypeEnum.TYPE_PHISHTANK_ONLINE_URL_LIST.getVarValue());
         listDirectLinkFeeds.add(FeedTypeEnum.TYPE_DIAMOND_FOX_URL_LIST.getVarValue());
         listDirectLinkFeeds.add(FeedTypeEnum.TYPE_VXVAULT_URL_LIST.getVarValue());
+        listDirectLinkFeeds.add(FeedTypeEnum.TYPE_CYBERCURE_AI_URL_LIST.getVarValue());
+        listDirectLinkFeeds.add(FeedTypeEnum.TYPE_MALSILO_URL_LIST.getVarValue());
     }
 
     // Method to know if FEED_FORMAT value is an IP feed, direct link

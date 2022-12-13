@@ -102,6 +102,7 @@ see tested list below:
 - `DIAMOND_FOX_URL_LIST` - Type for feed: https://raw.githubusercontent.com/pan-unit42/iocs/master/diamondfox/diamondfox_panels.txt
 - `VXVAULT_URL_LIST` - Type for feed: http://vxvault.net/URL_List.php
 - `CYBERCURE_AI_URL_LIST` - Type for feed: https://api.cybercure.ai/feed/get_url?type=csv
+- `MALSILO_URL_LIST` - Type for feed: https://malsilo.gitlab.io/feeds/dumps/url_list.txt
 
 ### Variables needed according to Feed Types
 
@@ -184,6 +185,10 @@ optionals are marked as `Optional`, if not assume that the variable is `Required
 - `CYBERCURE_AI_URL_LIST`
   - `FEED_URL` - Value: https://api.cybercure.ai/feed/get_url?type=csv
   - `FEED_FORMAT` - Value: `CYBERCURE_AI_URL_LIST`
+  - `FEED_BASE_REPUTATION` - (`Optional`) Value: Any value between -3 and 0 as you determine, any other value used will default to -1.
+- `MALSILO_URL_LIST`
+  - `FEED_URL` - Value: https://malsilo.gitlab.io/feeds/dumps/url_list.txt
+  - `FEED_FORMAT` - Value: `MALSILO_URL_LIST`
   - `FEED_BASE_REPUTATION` - (`Optional`) Value: Any value between -3 and 0 as you determine, any other value used will default to -1.
 
 ## Building for production
