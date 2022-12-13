@@ -27,7 +27,7 @@ import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
 public class GHYaraJob implements IJobExecutor {
-    private final Logger log = LoggerFactory.getLogger(OCJob.class);
+    private final Logger log = LoggerFactory.getLogger(GHYaraJob.class);
     private static final String CLASSNAME = "GHYaraJob";
 
     public GHYaraJob() {

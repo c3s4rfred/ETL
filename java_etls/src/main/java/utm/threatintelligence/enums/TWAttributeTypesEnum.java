@@ -6,6 +6,9 @@ public enum TWAttributeTypesEnum {
     TYPE_NORMAL("normal"),
     TYPE_DESCRIPTOR("descriptor"),
     TYPE_TEXT("text"),
+    TYPE_IP("ip"),
+    TYPE_CIDR("cidr"),
+    TYPE_URL("url"),
     // TW Yara
     TYPE_YARA_RULE("yara-rule"),
     TYPE_YARA_CONDITION_NAME("condition"),
