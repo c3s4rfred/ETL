@@ -93,8 +93,10 @@ see tested list below:
   and holds only separated lines of URLs, without comments or header,
   see tested list below:
   - https://cybercrime-tracker.net/all.php
+  - https://openphish.com/feed.txt
 - `PHISHTANK_ONLINE_URL_LIST` - Type for feed: https://data.phishtank.com/data/online-valid.csv
 - `DIAMOND_FOX_URL_LIST` - Type for feed: https://raw.githubusercontent.com/pan-unit42/iocs/master/diamondfox/diamondfox_panels.txt
+- `VXVAULT_URL_LIST` - Type for feed: http://vxvault.net/URL_List.php
 
 ### Variables needed according to Feed Types
 
@@ -169,7 +171,11 @@ optionals are marked as `Optional`, if not assume that the variable is `Required
 - `DIAMOND_FOX_URL_LIST`
   - `FEED_URL` - Value: https://raw.githubusercontent.com/pan-unit42/iocs/master/diamondfox/diamondfox_panels.txt
   - `FEED_FORMAT` - Value: `DIAMOND_FOX_URL_LIST`
-  - `FEED_BASE_REPUTATION` - (`Optional`) Value: Any value between -3 and 0 as you determine, any other value used will default to -1. 
+  - `FEED_BASE_REPUTATION` - (`Optional`) Value: Any value between -3 and 0 as you determine, any other value used will default to -1.
+- `VXVAULT_URL_LIST`
+  - `FEED_URL` - Value: http://vxvault.net/URL_List.php
+  - `FEED_FORMAT` - Value: `VXVAULT_URL_LIST`
+  - `FEED_BASE_REPUTATION` - (`Optional`) Value: Any value between -3 and 0 as you determine, any other value used will default to -1.
 
 ## Building for production
 
