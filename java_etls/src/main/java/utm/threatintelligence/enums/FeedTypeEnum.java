@@ -26,6 +26,8 @@ public enum FeedTypeEnum {
     TYPE_BENKOW_CC_URL_LIST("BENKOW_CC_URL_LIST"),
     // CVE feeds
     TYPE_GENERIC_CVE_LIST("GENERIC_CVE_LIST"),
+    // Domain feeds
+    TYPE_MALSILO_DOMAIN_LIST("MALSILO_DOMAIN_LIST"),
     UNRECOGNIZED_FEED("UNRECOGNIZED_FEED");
 
     private String varName;

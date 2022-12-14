@@ -108,6 +108,7 @@ see tested list below:
   and holds only separated lines of CVE identifiers, without comments or header,
   see tested list below:
   - https://feeds.ecrimelabs.net/data/metasploit-cve
+- `MALSILO_DOMAIN_LIST` - Type for feed: https://malsilo.gitlab.io/feeds/dumps/domain_list.txt
 
 ### Variables needed according to Feed Types
 
@@ -202,6 +203,10 @@ optionals are marked as `Optional`, if not assume that the variable is `Required
 - `GENERIC_CVE_LIST`
   - `FEED_URL` - Value: Any in the list of `GENERIC_CVE_LIST` in [Feed Types](#feed-types) above
   - `FEED_FORMAT` - Value: `GENERIC_CVE_LIST`
+  - `FEED_BASE_REPUTATION` - (`Optional`) Value: Any value between -3 and 0 as you determine, any other value used will default to -1.
+- `MALSILO_DOMAIN_LIST`
+  - `FEED_URL` - Value: https://malsilo.gitlab.io/feeds/dumps/domain_list.txt
+  - `FEED_FORMAT` - Value: `MALSILO_DOMAIN_LIST`
   - `FEED_BASE_REPUTATION` - (`Optional`) Value: Any value between -3 and 0 as you determine, any other value used will default to -1.
 
 ## Building for production

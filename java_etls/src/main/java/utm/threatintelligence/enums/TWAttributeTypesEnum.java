@@ -11,6 +11,7 @@ public enum TWAttributeTypesEnum {
     TYPE_URL("url"),
     TYPE_LINK("link"),
     TYPE_CVE("cve"),
+    TYPE_DOMAIN("domain"),
     // TW Yara
     TYPE_YARA_RULE("yara-rule"),
     TYPE_YARA_CONDITION_NAME("condition"),

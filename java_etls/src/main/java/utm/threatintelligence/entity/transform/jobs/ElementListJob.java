@@ -314,6 +314,16 @@ public class ElementListJob implements IJobExecutor {
                     ElementWithAssociations element = new ElementWithAssociations(commonEObject, new ArrayList<>());
                     cleanedList.add(element);
                 }
+                if (FeedTypeEnum.TYPE_MALSILO_DOMAIN_LIST.getVarValue().compareToIgnoreCase(EnvironmentConfig.FEED_FORMAT) == 0) {
+                    attr = attr.replace("\"", "");
+                    String[] arrayCSV = attr.split(",");
+                    // Second split is because the field value is ip:port
+                    CommonEntityObject commonEObject = new CommonEntityObject(TWAttributeTypesEnum.TYPE_DOMAIN.getValueType(),
+                            arrayCSV[2].trim(), EnvironmentConfig.FEED_THREAT_DESCRIPTION,
+                            EnvironmentConfig.FEED_BASE_REPUTATION);
+                    ElementWithAssociations element = new ElementWithAssociations(commonEObject, new ArrayList<>());
+                    cleanedList.add(element);
+                }
             }
         }
         return cleanedList;
@@ -340,6 +350,8 @@ public class ElementListJob implements IJobExecutor {
         listDirectLinkFeeds.add(FeedTypeEnum.TYPE_BENKOW_CC_URL_LIST.getVarValue());
         // CVE feeds
         listDirectLinkFeeds.add(FeedTypeEnum.TYPE_GENERIC_CVE_LIST.getVarValue());
+        // Domain feeds
+        listDirectLinkFeeds.add(FeedTypeEnum.TYPE_MALSILO_DOMAIN_LIST.getVarValue());
     }
 
     // Method to know if FEED_FORMAT value is an IP feed, direct link
