@@ -9,6 +9,8 @@ public enum TWAttributeTypesEnum {
     TYPE_IP("ip"),
     TYPE_CIDR("cidr"),
     TYPE_URL("url"),
+    TYPE_LINK("link"),
+    TYPE_CVE("cve"),
     // TW Yara
     TYPE_YARA_RULE("yara-rule"),
     TYPE_YARA_CONDITION_NAME("condition"),

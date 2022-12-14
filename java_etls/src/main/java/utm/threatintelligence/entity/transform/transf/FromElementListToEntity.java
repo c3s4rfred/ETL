@@ -5,8 +5,6 @@ import utm.sdk.threatwinds.entity.ein.ThreatIntEntity;
 import utm.threatintelligence.config.EnvironmentConfig;
 import utm.threatintelligence.entity.ein.common.CommonEntityObject;
 import utm.threatintelligence.entity.ein.common.ElementWithAssociations;
-import utm.threatintelligence.entity.ein.common.GenericListObject;
-import utm.threatintelligence.entity.ein.osint.circl.OCObject;
 import utm.threatintelligence.enums.TWAttributeTypesEnum;
 import utm.threatintelligence.interfaces.ITransform;
 
@@ -58,11 +56,17 @@ public class FromElementListToEntity implements ITransform {
         Iterator<CommonEntityObject> it;
         for (it = associations.iterator(); it.hasNext(); ) {
             CommonEntityObject commonEntityObjectTMP = it.next();
+            String finalType = "";
+            if (commonEntityObjectTMP.getType().compareTo(TWAttributeTypesEnum.TYPE_IP.getValueType()) == 0) {
+                finalType = (commonEntityObjectTMP.getValue().contains("/")) ? TWAttributeTypesEnum.TYPE_CIDR.getValueType() : TWAttributeTypesEnum.TYPE_IP.getValueType();
+            } else {
+                finalType = commonEntityObjectTMP.getType();
+            }
             AttrEntity attrEntityTmp = new AttrEntity(
                     "",
                     "",
                     new ThreatIntEntity(
-                            commonEntityObjectTMP.getType(),
+                            finalType,
                             commonEntityObjectTMP.getValue(),
                             commonEntityObjectTMP.getReputation(),
                             new ArrayList<>(),

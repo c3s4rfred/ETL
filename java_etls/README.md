@@ -71,6 +71,14 @@ see tested list below:
   - https://rules.emergingthreats.net/blockrules/compromised-ips.txt
   - https://www.dan.me.uk/torlist/?exit
   - https://www.dan.me.uk/torlist/
+  - https://raw.githubusercontent.com/stamparm/ipsum/master/levels/1.txt
+  - https://raw.githubusercontent.com/stamparm/ipsum/master/levels/2.txt
+  - https://raw.githubusercontent.com/stamparm/ipsum/master/levels/3.txt
+  - https://raw.githubusercontent.com/stamparm/ipsum/master/levels/4.txt
+  - https://raw.githubusercontent.com/stamparm/ipsum/master/levels/5.txt
+  - https://raw.githubusercontent.com/stamparm/ipsum/master/levels/6.txt
+  - https://raw.githubusercontent.com/stamparm/ipsum/master/levels/7.txt
+  - https://raw.githubusercontent.com/stamparm/ipsum/master/levels/8.txt
 - `ABUSE_SSLIP_BLACKLIST` - Type for feed: https://sslbl.abuse.ch/blacklist/sslipblacklist.csv
 - `REPUTATION_ALIEN_VAULT` - Type for feed: https://reputation.alienvault.com/reputation.generic
 - `COMMENT_IP_LIST` - Type for any feed that comes from a single raw file
@@ -85,6 +93,21 @@ see tested list below:
   and holds only separated lines of URLs, without comments or header,
   see tested list below:
   - https://cybercrime-tracker.net/all.php
+  - https://openphish.com/feed.txt
+  - https://cybercrime-tracker.net/ccamgate.php
+  - https://gitlab.com/ZeroDot1/CoinBlockerLists/raw/master/list.txt?inline=false
+  - https://gitlab.com/ZeroDot1/CoinBlockerLists/raw/master/list_optional.txt?inline=false
+  - https://gitlab.com/ZeroDot1/CoinBlockerLists/raw/master/list_browser.txt?inline=false
+- `PHISHTANK_ONLINE_URL_LIST` - Type for feed: https://data.phishtank.com/data/online-valid.csv
+- `DIAMOND_FOX_URL_LIST` - Type for feed: https://raw.githubusercontent.com/pan-unit42/iocs/master/diamondfox/diamondfox_panels.txt
+- `VXVAULT_URL_LIST` - Type for feed: http://vxvault.net/URL_List.php
+- `CYBERCURE_AI_URL_LIST` - Type for feed: https://api.cybercure.ai/feed/get_url?type=csv
+- `MALSILO_URL_LIST` - Type for feed: https://malsilo.gitlab.io/feeds/dumps/url_list.txt
+- `BENKOW_CC_URL_LIST` - Type for feed: https://benkow.cc/export.php
+- `GENERIC_CVE_LIST` - Type for any feed that comes from a single raw file
+  and holds only separated lines of CVE identifiers, without comments or header,
+  see tested list below:
+  - https://feeds.ecrimelabs.net/data/metasploit-cve
 
 ### Variables needed according to Feed Types
 
@@ -147,6 +170,38 @@ optionals are marked as `Optional`, if not assume that the variable is `Required
 - `MALSILO_IP_LIST`
   - `FEED_URL` - Value: https://malsilo.gitlab.io/feeds/dumps/ip_list.txt
   - `FEED_FORMAT` - Value: `MALSILO_IP_LIST`
+  - `FEED_BASE_REPUTATION` - (`Optional`) Value: Any value between -3 and 0 as you determine, any other value used will default to -1.
+- `GENERIC_URL_LIST`
+  - `FEED_URL` - Value: Any in the list of `GENERIC_URL_LIST` in [Feed Types](#feed-types) above
+  - `FEED_FORMAT` - Value: `GENERIC_URL_LIST`
+  - `FEED_BASE_REPUTATION` - (`Optional`) Value: Any value between -3 and 0 as you determine, any other value used will default to -1.
+- `PHISHTANK_ONLINE_URL_LIST`
+  - `FEED_URL` - Value: https://data.phishtank.com/data/online-valid.csv
+  - `FEED_FORMAT` - Value: `PHISHTANK_ONLINE_URL_LIST`
+  - `FEED_BASE_REPUTATION` - (`Optional`) Value: Any value between -3 and 0 as you determine, any other value used will default to -1.
+- `DIAMOND_FOX_URL_LIST`
+  - `FEED_URL` - Value: https://raw.githubusercontent.com/pan-unit42/iocs/master/diamondfox/diamondfox_panels.txt
+  - `FEED_FORMAT` - Value: `DIAMOND_FOX_URL_LIST`
+  - `FEED_BASE_REPUTATION` - (`Optional`) Value: Any value between -3 and 0 as you determine, any other value used will default to -1.
+- `VXVAULT_URL_LIST`
+  - `FEED_URL` - Value: http://vxvault.net/URL_List.php
+  - `FEED_FORMAT` - Value: `VXVAULT_URL_LIST`
+  - `FEED_BASE_REPUTATION` - (`Optional`) Value: Any value between -3 and 0 as you determine, any other value used will default to -1.
+- `CYBERCURE_AI_URL_LIST`
+  - `FEED_URL` - Value: https://api.cybercure.ai/feed/get_url?type=csv
+  - `FEED_FORMAT` - Value: `CYBERCURE_AI_URL_LIST`
+  - `FEED_BASE_REPUTATION` - (`Optional`) Value: Any value between -3 and 0 as you determine, any other value used will default to -1.
+- `MALSILO_URL_LIST`
+  - `FEED_URL` - Value: https://malsilo.gitlab.io/feeds/dumps/url_list.txt
+  - `FEED_FORMAT` - Value: `MALSILO_URL_LIST`
+  - `FEED_BASE_REPUTATION` - (`Optional`) Value: Any value between -3 and 0 as you determine, any other value used will default to -1.
+- `BENKOW_CC_URL_LIST`
+  - `FEED_URL` - Value: https://benkow.cc/export.php
+  - `FEED_FORMAT` - Value: `BENKOW_CC_URL_LIST`
+  - `FEED_BASE_REPUTATION` - (`Optional`) Value: Any value between -3 and 0 as you determine, any other value used will default to -1.
+- `GENERIC_CVE_LIST`
+  - `FEED_URL` - Value: Any in the list of `GENERIC_CVE_LIST` in [Feed Types](#feed-types) above
+  - `FEED_FORMAT` - Value: `GENERIC_CVE_LIST`
   - `FEED_BASE_REPUTATION` - (`Optional`) Value: Any value between -3 and 0 as you determine, any other value used will default to -1.
 
 ## Building for production
