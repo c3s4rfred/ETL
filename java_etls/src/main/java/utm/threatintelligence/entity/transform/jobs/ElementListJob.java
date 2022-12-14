@@ -307,6 +307,13 @@ public class ElementListJob implements IJobExecutor {
                         cleanedList.add(element);
                     }
                 }
+                if (FeedTypeEnum.TYPE_GENERIC_CVE_LIST.getVarValue().compareToIgnoreCase(EnvironmentConfig.FEED_FORMAT) == 0 ) {
+                    CommonEntityObject commonEObject = new CommonEntityObject(TWAttributeTypesEnum.TYPE_CVE.getValueType(),
+                            attr, EnvironmentConfig.FEED_THREAT_DESCRIPTION,
+                            EnvironmentConfig.FEED_BASE_REPUTATION);
+                    ElementWithAssociations element = new ElementWithAssociations(commonEObject, new ArrayList<>());
+                    cleanedList.add(element);
+                }
             }
         }
         return cleanedList;
@@ -331,6 +338,8 @@ public class ElementListJob implements IJobExecutor {
         listDirectLinkFeeds.add(FeedTypeEnum.TYPE_CYBERCURE_AI_URL_LIST.getVarValue());
         listDirectLinkFeeds.add(FeedTypeEnum.TYPE_MALSILO_URL_LIST.getVarValue());
         listDirectLinkFeeds.add(FeedTypeEnum.TYPE_BENKOW_CC_URL_LIST.getVarValue());
+        // CVE feeds
+        listDirectLinkFeeds.add(FeedTypeEnum.TYPE_GENERIC_CVE_LIST.getVarValue());
     }
 
     // Method to know if FEED_FORMAT value is an IP feed, direct link
