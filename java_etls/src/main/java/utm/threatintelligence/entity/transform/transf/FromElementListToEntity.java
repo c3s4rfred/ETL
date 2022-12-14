@@ -56,11 +56,17 @@ public class FromElementListToEntity implements ITransform {
         Iterator<CommonEntityObject> it;
         for (it = associations.iterator(); it.hasNext(); ) {
             CommonEntityObject commonEntityObjectTMP = it.next();
+            String finalType = "";
+            if (commonEntityObjectTMP.getType().compareTo(TWAttributeTypesEnum.TYPE_IP.getValueType()) == 0) {
+                finalType = (commonEntityObjectTMP.getValue().contains("/")) ? TWAttributeTypesEnum.TYPE_CIDR.getValueType() : TWAttributeTypesEnum.TYPE_IP.getValueType();
+            } else {
+                finalType = commonEntityObjectTMP.getType();
+            }
             AttrEntity attrEntityTmp = new AttrEntity(
                     "",
                     "",
                     new ThreatIntEntity(
-                            commonEntityObjectTMP.getType(),
+                            finalType,
                             commonEntityObjectTMP.getValue(),
                             commonEntityObjectTMP.getReputation(),
                             new ArrayList<>(),

@@ -285,6 +285,28 @@ public class ElementListJob implements IJobExecutor {
                     ElementWithAssociations element = new ElementWithAssociations(commonEObject, new ArrayList<>());
                     cleanedList.add(element);
                 }
+                if (FeedTypeEnum.TYPE_BENKOW_CC_URL_LIST.getVarValue().compareToIgnoreCase(EnvironmentConfig.FEED_FORMAT) == 0) {
+                    attr = attr.replace("\"", "").trim();
+                    if (attr.matches("^(\\d+)(.+)")) {
+                        String[] arrayCSV = attr.split(";");
+
+                        CommonEntityObject commonEObject = new CommonEntityObject(TWAttributeTypesEnum.TYPE_URL.getValueType(),
+                                generateProtocol(arrayCSV[2].trim()), EnvironmentConfig.FEED_THREAT_DESCRIPTION,
+                                EnvironmentConfig.FEED_BASE_REPUTATION);
+                        ElementWithAssociations element = new ElementWithAssociations(commonEObject, new ArrayList<>());
+                        // Adding the ip associated with the url
+                        if (arrayCSV[3].trim().compareTo("") != 0) {
+                            CommonEntityObject commonEObjectAssoc = new CommonEntityObject(TWAttributeTypesEnum.TYPE_IP.getValueType(),
+                                    arrayCSV[3].trim(), EnvironmentConfig.FEED_THREAT_DESCRIPTION,
+                                    EnvironmentConfig.FEED_BASE_REPUTATION);
+                            List<CommonEntityObject> assoc = new ArrayList<>();
+                            assoc.add(commonEObjectAssoc);
+                            element.setAssociations(assoc);
+                        }
+
+                        cleanedList.add(element);
+                    }
+                }
             }
         }
         return cleanedList;
@@ -308,6 +330,7 @@ public class ElementListJob implements IJobExecutor {
         listDirectLinkFeeds.add(FeedTypeEnum.TYPE_VXVAULT_URL_LIST.getVarValue());
         listDirectLinkFeeds.add(FeedTypeEnum.TYPE_CYBERCURE_AI_URL_LIST.getVarValue());
         listDirectLinkFeeds.add(FeedTypeEnum.TYPE_MALSILO_URL_LIST.getVarValue());
+        listDirectLinkFeeds.add(FeedTypeEnum.TYPE_BENKOW_CC_URL_LIST.getVarValue());
     }
 
     // Method to know if FEED_FORMAT value is an IP feed, direct link
