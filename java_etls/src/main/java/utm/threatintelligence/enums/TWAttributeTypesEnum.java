@@ -1,6 +1,6 @@
 package utm.threatintelligence.enums;
 
-/*Enum for threat intelligence types values definition used for something*/
+/*Enum for threat intelligence types values definition used for build entities*/
 public enum TWAttributeTypesEnum {
     TYPE_OBJECT("object"),
     TYPE_NORMAL("normal"),
@@ -12,6 +12,7 @@ public enum TWAttributeTypesEnum {
     TYPE_LINK("link"),
     TYPE_CVE("cve"),
     TYPE_DOMAIN("domain"),
+    TYPE_MD5("md5"),
     // TW Yara
     TYPE_YARA_RULE("yara-rule"),
     TYPE_YARA_CONDITION_NAME("condition"),

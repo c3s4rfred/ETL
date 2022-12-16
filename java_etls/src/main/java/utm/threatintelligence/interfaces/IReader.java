@@ -7,4 +7,5 @@ import java.util.List;
 public interface IReader {
     String readFile(URL urlFile) throws IOException;
     List<String> readFileAsList(URL urlFile) throws Exception;
+    String readFileNameFromZipFile(URL urlFile) throws Exception;
 }
