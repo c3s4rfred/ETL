@@ -13,6 +13,7 @@ public enum TWAttributeTypesEnum {
     TYPE_CVE("cve"),
     TYPE_DOMAIN("domain"),
     TYPE_MD5("md5"),
+    TYPE_SHA256("sha256"),
     // TW Yara
     TYPE_YARA_RULE("yara-rule"),
     TYPE_YARA_CONDITION_NAME("condition"),

@@ -110,10 +110,11 @@ see tested list below:
   see tested list below:
   - https://feeds.ecrimelabs.net/data/metasploit-cve
 - `MALSILO_DOMAIN_LIST` - Type for feed: https://malsilo.gitlab.io/feeds/dumps/domain_list.txt
-- `ZIP_WITH_GENERIC_MD5_LIST` - Type for any feed that comes from a single raw file
+- `ZIP_WITH_GENERIC_MD5_LIST` - Type for any feed that comes from a single zip file, with single file inside
   and holds only separated lines of MD5 hashes, without header, can have comments (lines beginning with `#`)
   see tested list below:
   - https://bazaar.abuse.ch/export/txt/md5/full/
+- `MALSHARE_CURRENT_DAILY_SHA256_LIST` - Type for feed: https://malshare.com/daily/malshare.current.all.txt
 
 ### Variables needed according to Feed Types
 
@@ -220,6 +221,10 @@ optionals are marked as `Optional`, if not assume that the variable is `Required
 - `ZIP_WITH_GENERIC_MD5_LIST`
   - `FEED_URL` - Value: Any in the list of `ZIP_WITH_GENERIC_MD5_LIST` in [Feed Types](#feed-types) above
   - `FEED_FORMAT` - Value: `ZIP_WITH_GENERIC_MD5_LIST`
+  - `FEED_BASE_REPUTATION` - (`Optional`) Value: Any value between -3 and 0 as you determine, any other value used will default to -1.
+- `MALSHARE_CURRENT_DAILY_SHA256_LIST`
+  - `FEED_URL` - Value: https://malshare.com/daily/malshare.current.all.txt
+  - `FEED_FORMAT` - Value: `MALSHARE_CURRENT_DAILY_SHA256_LIST`
   - `FEED_BASE_REPUTATION` - (`Optional`) Value: Any value between -3 and 0 as you determine, any other value used will default to -1.
 
 ## Building for production

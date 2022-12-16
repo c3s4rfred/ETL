@@ -29,6 +29,15 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
+/**
+ * Class to process lists of elements like URL, LINK, MD5, SHA256, IP and so on
+ * To add a new feed you have to:
+ * 1- Add new enum to FeedTypeEnum
+ * 2- Add enum value previously created to TWJobFactory in the condition that returns new ElementListJob()
+ * 3- Add enum value previously created to FillListOfDirectLinkFeeds() - > ElementListJob, in case that the feed is compressed, you must add the enum to
+ *    FillListOfZippedLinks() - > ElementListJob too
+ * 4- Then do the feed implementation in createElemWithAssocList(List<String> origin) -> ElementListParallelTask
+ * */
 public class ElementListJob implements IJobExecutor {
     private final Logger log = LoggerFactory.getLogger(ElementListJob.class);
     private static final String CLASSNAME = "ElementListJob";
@@ -351,6 +360,16 @@ public class ElementListJob implements IJobExecutor {
                     ElementWithAssociations element = new ElementWithAssociations(commonEObject, new ArrayList<>());
                     cleanedList.add(element);
                 }
+                // SHA256 hashes lists
+                if (FeedTypeEnum.TYPE_MALSHARE_CURRENT_DAILY_SHA256_LIST.getVarValue().compareToIgnoreCase(EnvironmentConfig.FEED_FORMAT) == 0 ){
+                    attr = attr.trim().replaceAll("\\s+"," ");
+                    String[] arrayCSV = attr.split(" ");
+                    CommonEntityObject commonEObject = new CommonEntityObject(TWAttributeTypesEnum.TYPE_SHA256.getValueType(),
+                            arrayCSV[2], EnvironmentConfig.FEED_THREAT_DESCRIPTION,
+                            EnvironmentConfig.FEED_BASE_REPUTATION);
+                    ElementWithAssociations element = new ElementWithAssociations(commonEObject, new ArrayList<>());
+                    cleanedList.add(element);
+                }
 
             }
         }
@@ -383,6 +402,8 @@ public class ElementListJob implements IJobExecutor {
         listDirectLinkFeeds.add(FeedTypeEnum.TYPE_MALSILO_DOMAIN_LIST.getVarValue());
         // MD5 hashes
         listDirectLinkFeeds.add(FeedTypeEnum.TYPE_ZIP_WITH_GENERIC_MD5_LIST.getVarValue());
+        // SHA256 feeds
+        listDirectLinkFeeds.add(FeedTypeEnum.TYPE_MALSHARE_CURRENT_DAILY_SHA256_LIST.getVarValue());
     }
     // Method to fill the ListZippedLink
     public static void FillListOfZippedLinks() {
