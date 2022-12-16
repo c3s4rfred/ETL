@@ -21,6 +21,7 @@ import utm.threatintelligence.scraper.LinkPage;
 import utm.threatintelligence.urlcreator.FullPathUrlCreator;
 
 import java.io.FileOutputStream;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -32,10 +33,13 @@ public class ElementListJob implements IJobExecutor {
     private final Logger log = LoggerFactory.getLogger(ElementListJob.class);
     private static final String CLASSNAME = "ElementListJob";
     static List<String> listDirectLinkFeeds;
+    static List<String> listZippedLink;
 
     public ElementListJob() {
         this.listDirectLinkFeeds = new ArrayList<>();
+        this.listZippedLink = new ArrayList<>();
         FillListOfDirectLinkFeeds();
+        FillListOfZippedLinks();
     }
 
     @Override
@@ -51,7 +55,7 @@ public class ElementListJob implements IJobExecutor {
         try {
             // Those FEED_FORMAT below are direct resource and don't have content-type, so, the feed url have to
             // be inserted directly in the list of links
-            if (isIPDirectLink()) {
+            if (isDirectLink()) {
                 LinkPage.getListOfLinks().add(EnvironmentConfig.FEED_URL);
             }
         } catch (Exception ex) {
@@ -103,6 +107,9 @@ public class ElementListJob implements IJobExecutor {
                 log.info(ctx + ": " + new LogDef(LogTypeEnum.TYPE_EXECUTION.getVarValue(), linkToProcess,
                         FlowPhasesEnum.P1_READ_FILE.getVarValue()).logDefToString());
 
+                if(isZippedLink()){
+                    linkToProcess = reader.readFileNameFromZipFile(new URL(linkToProcess));
+                }
                 List<String> dataFromFile = reader.readFileAsList(
                         new FullPathUrlCreator().createURL(linkToProcess, EnvironmentConfig.LINK_SEPARATOR)
                 );
@@ -221,7 +228,7 @@ public class ElementListJob implements IJobExecutor {
                     cleanedList.add(element);
                 }
                 // URL lists
-                if (FeedTypeEnum.TYPE_GENERIC_URL_LIST.getVarValue().compareToIgnoreCase(EnvironmentConfig.FEED_FORMAT) == 0){
+                if (FeedTypeEnum.TYPE_GENERIC_URL_LIST.getVarValue().compareToIgnoreCase(EnvironmentConfig.FEED_FORMAT) == 0 ){
                     // Generating default protocol if not exists
                     attr = generateProtocol(attr);
 
@@ -307,6 +314,17 @@ public class ElementListJob implements IJobExecutor {
                         cleanedList.add(element);
                     }
                 }
+                if (FeedTypeEnum.TYPE_ZIP_HAUS_ABUSE_URL_LIST.getVarValue().compareToIgnoreCase(EnvironmentConfig.FEED_FORMAT) == 0) {
+                    attr = attr.replace("\"", "");
+                    String[] arrayCSV = attr.split(",");
+                    // Second split is because the field value is ip:port
+                    CommonEntityObject commonEObject = new CommonEntityObject(TWAttributeTypesEnum.TYPE_URL.getValueType(),
+                            generateProtocol(arrayCSV[2].trim()), EnvironmentConfig.FEED_THREAT_DESCRIPTION,
+                            EnvironmentConfig.FEED_BASE_REPUTATION);
+                    ElementWithAssociations element = new ElementWithAssociations(commonEObject, new ArrayList<>());
+                    cleanedList.add(element);
+                }
+                // CVE lists
                 if (FeedTypeEnum.TYPE_GENERIC_CVE_LIST.getVarValue().compareToIgnoreCase(EnvironmentConfig.FEED_FORMAT) == 0 ) {
                     CommonEntityObject commonEObject = new CommonEntityObject(TWAttributeTypesEnum.TYPE_CVE.getValueType(),
                             attr, EnvironmentConfig.FEED_THREAT_DESCRIPTION,
@@ -314,6 +332,26 @@ public class ElementListJob implements IJobExecutor {
                     ElementWithAssociations element = new ElementWithAssociations(commonEObject, new ArrayList<>());
                     cleanedList.add(element);
                 }
+                // Domain lists
+                if (FeedTypeEnum.TYPE_MALSILO_DOMAIN_LIST.getVarValue().compareToIgnoreCase(EnvironmentConfig.FEED_FORMAT) == 0) {
+                    attr = attr.replace("\"", "");
+                    String[] arrayCSV = attr.split(",");
+                    // Second split is because the field value is ip:port
+                    CommonEntityObject commonEObject = new CommonEntityObject(TWAttributeTypesEnum.TYPE_DOMAIN.getValueType(),
+                            arrayCSV[2].trim(), EnvironmentConfig.FEED_THREAT_DESCRIPTION,
+                            EnvironmentConfig.FEED_BASE_REPUTATION);
+                    ElementWithAssociations element = new ElementWithAssociations(commonEObject, new ArrayList<>());
+                    cleanedList.add(element);
+                }
+                // MD5 hashes lists
+                if (FeedTypeEnum.TYPE_ZIP_WITH_GENERIC_MD5_LIST.getVarValue().compareToIgnoreCase(EnvironmentConfig.FEED_FORMAT) == 0 ){
+                    CommonEntityObject commonEObject = new CommonEntityObject(TWAttributeTypesEnum.TYPE_MD5.getValueType(),
+                            attr, EnvironmentConfig.FEED_THREAT_DESCRIPTION,
+                            EnvironmentConfig.FEED_BASE_REPUTATION);
+                    ElementWithAssociations element = new ElementWithAssociations(commonEObject, new ArrayList<>());
+                    cleanedList.add(element);
+                }
+
             }
         }
         return cleanedList;
@@ -338,14 +376,36 @@ public class ElementListJob implements IJobExecutor {
         listDirectLinkFeeds.add(FeedTypeEnum.TYPE_CYBERCURE_AI_URL_LIST.getVarValue());
         listDirectLinkFeeds.add(FeedTypeEnum.TYPE_MALSILO_URL_LIST.getVarValue());
         listDirectLinkFeeds.add(FeedTypeEnum.TYPE_BENKOW_CC_URL_LIST.getVarValue());
+        listDirectLinkFeeds.add(FeedTypeEnum.TYPE_ZIP_HAUS_ABUSE_URL_LIST.getVarValue());
         // CVE feeds
         listDirectLinkFeeds.add(FeedTypeEnum.TYPE_GENERIC_CVE_LIST.getVarValue());
+        // Domain feeds
+        listDirectLinkFeeds.add(FeedTypeEnum.TYPE_MALSILO_DOMAIN_LIST.getVarValue());
+        // MD5 hashes
+        listDirectLinkFeeds.add(FeedTypeEnum.TYPE_ZIP_WITH_GENERIC_MD5_LIST.getVarValue());
+    }
+    // Method to fill the ListZippedLink
+    public static void FillListOfZippedLinks() {
+        // Zipped URL feeds
+        listZippedLink.add(FeedTypeEnum.TYPE_ZIP_HAUS_ABUSE_URL_LIST.getVarValue());
+        listZippedLink.add(FeedTypeEnum.TYPE_ZIP_WITH_GENERIC_MD5_LIST.getVarValue());
     }
 
-    // Method to know if FEED_FORMAT value is an IP feed, direct link
-    public boolean isIPDirectLink() {
+    // Method to know if FEED_FORMAT value is a direct link
+    public boolean isDirectLink() {
         Iterator<String> it;
         for (it = listDirectLinkFeeds.iterator(); it.hasNext(); ) {
+            String attr = it.next();
+            if (attr.compareToIgnoreCase(EnvironmentConfig.FEED_FORMAT) == 0) {
+                return true;
+            }
+        }
+        return false;
+    }
+    // Method to know if FEED_FORMAT value is zipped link
+    public boolean isZippedLink() {
+        Iterator<String> it;
+        for (it = listZippedLink.iterator(); it.hasNext(); ) {
             String attr = it.next();
             if (attr.compareToIgnoreCase(EnvironmentConfig.FEED_FORMAT) == 0) {
                 return true;

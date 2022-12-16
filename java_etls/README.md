@@ -82,7 +82,7 @@ see tested list below:
 - `ABUSE_SSLIP_BLACKLIST` - Type for feed: https://sslbl.abuse.ch/blacklist/sslipblacklist.csv
 - `REPUTATION_ALIEN_VAULT` - Type for feed: https://reputation.alienvault.com/reputation.generic
 - `COMMENT_IP_LIST` - Type for any feed that comes from a single raw file
-  and holds only separated lines of IP addresses or segments, with comments,
+  and holds only separated lines of IP addresses or segments, with comments (lines beginning with `#`),
   see tested list below:
   - https://home.nuug.no/~peter/pop3gropers.txt
   - https://raw.githubusercontent.com/ktsaou/blocklist-ipsets/master/firehol_level1.netset
@@ -104,10 +104,16 @@ see tested list below:
 - `CYBERCURE_AI_URL_LIST` - Type for feed: https://api.cybercure.ai/feed/get_url?type=csv
 - `MALSILO_URL_LIST` - Type for feed: https://malsilo.gitlab.io/feeds/dumps/url_list.txt
 - `BENKOW_CC_URL_LIST` - Type for feed: https://benkow.cc/export.php
+- `ZIP_HAUS_ABUSE_URL_LIST` - Type for feed: https://urlhaus.abuse.ch/downloads/csv/
 - `GENERIC_CVE_LIST` - Type for any feed that comes from a single raw file
   and holds only separated lines of CVE identifiers, without comments or header,
   see tested list below:
   - https://feeds.ecrimelabs.net/data/metasploit-cve
+- `MALSILO_DOMAIN_LIST` - Type for feed: https://malsilo.gitlab.io/feeds/dumps/domain_list.txt
+- `ZIP_WITH_GENERIC_MD5_LIST` - Type for any feed that comes from a single raw file
+  and holds only separated lines of MD5 hashes, without header, can have comments (lines beginning with `#`)
+  see tested list below:
+  - https://bazaar.abuse.ch/export/txt/md5/full/
 
 ### Variables needed according to Feed Types
 
@@ -199,9 +205,21 @@ optionals are marked as `Optional`, if not assume that the variable is `Required
   - `FEED_URL` - Value: https://benkow.cc/export.php
   - `FEED_FORMAT` - Value: `BENKOW_CC_URL_LIST`
   - `FEED_BASE_REPUTATION` - (`Optional`) Value: Any value between -3 and 0 as you determine, any other value used will default to -1.
+- `ZIP_HAUS_ABUSE_URL_LIST`
+  - `FEED_URL` - Value: https://urlhaus.abuse.ch/downloads/csv/
+  - `FEED_FORMAT` - Value: `ZIP_HAUS_ABUSE_URL_LIST`
+  - `FEED_BASE_REPUTATION` - (`Optional`) Value: Any value between -3 and 0 as you determine, any other value used will default to -1.
 - `GENERIC_CVE_LIST`
   - `FEED_URL` - Value: Any in the list of `GENERIC_CVE_LIST` in [Feed Types](#feed-types) above
   - `FEED_FORMAT` - Value: `GENERIC_CVE_LIST`
+  - `FEED_BASE_REPUTATION` - (`Optional`) Value: Any value between -3 and 0 as you determine, any other value used will default to -1.
+- `MALSILO_DOMAIN_LIST`
+  - `FEED_URL` - Value: https://malsilo.gitlab.io/feeds/dumps/domain_list.txt
+  - `FEED_FORMAT` - Value: `MALSILO_DOMAIN_LIST`
+  - `FEED_BASE_REPUTATION` - (`Optional`) Value: Any value between -3 and 0 as you determine, any other value used will default to -1.
+- `ZIP_WITH_GENERIC_MD5_LIST`
+  - `FEED_URL` - Value: Any in the list of `ZIP_WITH_GENERIC_MD5_LIST` in [Feed Types](#feed-types) above
+  - `FEED_FORMAT` - Value: `ZIP_WITH_GENERIC_MD5_LIST`
   - `FEED_BASE_REPUTATION` - (`Optional`) Value: Any value between -3 and 0 as you determine, any other value used will default to -1.
 
 ## Building for production
