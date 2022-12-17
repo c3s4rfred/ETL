@@ -14,10 +14,11 @@ import utm.threatintelligence.enums.TWAttributeTypesEnum;
 import utm.threatintelligence.enums.TransformationEnum;
 import utm.threatintelligence.enums.osint.circl.OCReputationEnum;
 import utm.threatintelligence.enums.osint.circl.OCSpecificTypesToCheck;
+import utm.threatintelligence.interfaces.IEntityTransform;
 import utm.threatintelligence.interfaces.ITransform;
 import utm.threatintelligence.utilities.UtilitiesService;
 
-public class FromOCToEntity implements ITransform {
+public class FromOCToEntity implements IEntityTransform {
 
     private List<ThreatIntEntity> threatIntEntityList;
     private final String typeTransf = TransformationEnum.TYPE_TRANSFORMATION.getVarValue();
@@ -34,7 +35,7 @@ public class FromOCToEntity implements ITransform {
     }
 
     @Override
-    public <T> T transform(T origin, T destination) throws Exception {
+    public <T> T transform(T origin) throws Exception {
         String transformationsToApply = typeTransf + reputationTransf + valueUrlTransf + emailComponentsTransf +
                 miscTypeTransformation + datetimeValueTransformation + yaraTypeTransformation;
         if (origin instanceof OCJsonEvent) {
@@ -309,6 +310,7 @@ public class FromOCToEntity implements ITransform {
         return descriptor;
     }
 
+    @Override
     public List<ThreatIntEntity> getThreatIntEntityList() {
         return threatIntEntityList;
     }
@@ -520,7 +522,7 @@ public class FromOCToEntity implements ITransform {
                     GHYaraExtractor yaraExtractor = new GHYaraExtractor(checkType.getValue());
                     ArrayList<YaraRuleObject> yaraRuleObjects = yaraExtractor.getYaraRuleObjects();
                     FromYaraToEntity fromYaraToEntity = new FromYaraToEntity();
-                    fromYaraToEntity.transform(yaraRuleObjects, null);
+                    fromYaraToEntity.transform(yaraRuleObjects);
                     ThreatIntEntity yaraEntity = fromYaraToEntity.getThreatIntEntityList().get(0);
                     return (T) yaraEntity;
                 } catch (Exception ex) {

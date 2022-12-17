@@ -14,6 +14,7 @@ public enum TWAttributeTypesEnum {
     TYPE_DOMAIN("domain"),
     TYPE_MD5("md5"),
     TYPE_SHA256("sha256"),
+    TYPE_SURICATA_RULE("suricata-rule"),
     // TW Yara
     TYPE_YARA_RULE("yara-rule"),
     TYPE_YARA_CONDITION_NAME("condition"),

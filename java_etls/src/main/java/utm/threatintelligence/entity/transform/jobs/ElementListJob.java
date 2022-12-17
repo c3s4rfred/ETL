@@ -13,6 +13,8 @@ import utm.threatintelligence.enums.FeedTypeEnum;
 import utm.threatintelligence.enums.FlowPhasesEnum;
 import utm.threatintelligence.enums.LogTypeEnum;
 import utm.threatintelligence.enums.TWAttributeTypesEnum;
+import utm.threatintelligence.factory.TWTransformationFactory;
+import utm.threatintelligence.interfaces.IEntityTransform;
 import utm.threatintelligence.interfaces.IJobExecutor;
 import utm.threatintelligence.json.parser.GenericParser;
 import utm.threatintelligence.logging.LogDef;
@@ -135,8 +137,8 @@ public class ElementListJob implements IJobExecutor {
                 log.info(ctx + ": " + new LogDef(LogTypeEnum.TYPE_EXECUTION.getVarValue(), linkToProcess,
                         FlowPhasesEnum.P3_TRANSFORM_TO_ENTITY.getVarValue()).logDefToString());
 
-                FromElementListToEntity fromElementListToEntity = new FromElementListToEntity();
-                fromElementListToEntity.transform(elementWithAssociations, null);
+                IEntityTransform fromSomethingToEntity = new TWTransformationFactory().getTransformation();
+                fromSomethingToEntity.transform(elementWithAssociations);
 
                 // ----------------------- Log and execute mapping Entity to JSON -------------------------//
                 log.info(ctx + ": " + new LogDef(LogTypeEnum.TYPE_EXECUTION.getVarValue(), linkToProcess,
@@ -145,7 +147,7 @@ public class ElementListJob implements IJobExecutor {
                 // ----------------------- Inserting via sdk -------------------------//
                 IRequestExecutor mainJob = new RequestFactory(500).getExecutor();
                 if (mainJob != null) {
-                    String output = (String) mainJob.executeRequest(TWEndPointEnum.POST_ENTITIES.get(), fromElementListToEntity.getThreatIntEntityList());
+                    String output = (String) mainJob.executeRequest(TWEndPointEnum.POST_ENTITIES.get(), fromSomethingToEntity.getThreatIntEntityList());
                     log.info(ctx + " " + linkToProcess + ": " + output);
                 }
 

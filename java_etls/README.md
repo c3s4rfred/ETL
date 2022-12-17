@@ -115,6 +115,8 @@ see tested list below:
   see tested list below:
   - https://bazaar.abuse.ch/export/txt/md5/full/
 - `MALSHARE_CURRENT_DAILY_SHA256_LIST` - Type for feed: https://malshare.com/daily/malshare.current.all.txt
+- `GITHUB_SURICATA` - Type for any github repository that holds suricata rules. See tested list below:
+  - https://github.com/sudohyak/suricata-rules
 
 ### Variables needed according to Feed Types
 
@@ -226,6 +228,10 @@ optionals are marked as `Optional`, if not assume that the variable is `Required
   - `FEED_URL` - Value: https://malshare.com/daily/malshare.current.all.txt
   - `FEED_FORMAT` - Value: `MALSHARE_CURRENT_DAILY_SHA256_LIST`
   - `FEED_BASE_REPUTATION` - (`Optional`) Value: Any value between -3 and 0 as you determine, any other value used will default to -1.
+- `GITHUB_SURICATA` - It's important to know in this case, that with `GITHUB_SURICATA` feed format you can process any github "repository" URL, even if it's more specific like: https://github.com/sudohyak/suricata-rules/tree/main/CVE-2020-14750, in which case the value of the branch in the URL and `GITHUB_BRANCH_NAME` value must match, otherwise you will get wrong results. Only `.rules` links are processed.
+  - `FEED_URL` - Value: Any in the list of `GITHUB_SURICATA` in [Feed Types](#feed-types) above
+  - `FEED_FORMAT` - Value: `GITHUB_SURICATA`
+  - `GITHUB_BRANCH_NAME` - Value: Branch you want to process from, for example `main`
 
 ## Building for production
 

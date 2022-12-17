@@ -10,7 +10,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import utm.threatintelligence.config.EnvironmentConfig;
 import utm.threatintelligence.enums.FeedTypeEnum;
-import utm.threatintelligence.enums.yara.YaraAllowedExtensionsEnum;
+import utm.threatintelligence.enums.LinkAllowedExtensionsEnum;
 import utm.threatintelligence.interfaces.IProcessor;
 
 public class LinkListGenerator implements IProcessor {
@@ -43,7 +43,7 @@ public class LinkListGenerator implements IProcessor {
     }
 
     public static void scrapLinksRecursive(String BASE_URL) throws IOException {
-        log.info("Searching Yara rules in path -> " + BASE_URL);
+        log.info("Searching sub-elements in path -> " + BASE_URL);
         URL url = new URL(BASE_URL);
         Reader reader = new InputStreamReader((InputStream) url.getContent());
         new ParserDelegator().parse(reader, new LinkPage(), false);
@@ -66,14 +66,24 @@ public class LinkListGenerator implements IProcessor {
 
     // This method can be used to verify if link file extension is allowed for the feed
     public static boolean isExtensionAllowed(String linkToVerify) {
-
-        // Checking RFXN Yara feed
         if (FeedTypeEnum.TYPE_RFXN_YARA.getVarValue().compareToIgnoreCase(EnvironmentConfig.FEED_FORMAT) == 0 ||
-                FeedTypeEnum.TYPE_GITHUB_YARA.getVarValue().compareToIgnoreCase(EnvironmentConfig.FEED_FORMAT) == 0) {
-            String[] allowedExt = YaraAllowedExtensionsEnum.YARA_ALLOWED_EXTENSIONS.get().split(",");
-            for (int i = 0; i < allowedExt.length; i++) {
-                if (linkToVerify.endsWith(allowedExt[i])) {
-                    return true;
+                FeedTypeEnum.TYPE_GITHUB_YARA.getVarValue().compareToIgnoreCase(EnvironmentConfig.FEED_FORMAT) == 0 ||
+                FeedTypeEnum.TYPE_GITHUB_SURICATA.getVarValue().compareToIgnoreCase(EnvironmentConfig.FEED_FORMAT) == 0) {
+            String[] allowedExt = new String[0];
+            // Checking RFXN and Github Yara feeds
+            if (FeedTypeEnum.TYPE_RFXN_YARA.getVarValue().compareToIgnoreCase(EnvironmentConfig.FEED_FORMAT) == 0 ||
+                    FeedTypeEnum.TYPE_GITHUB_YARA.getVarValue().compareToIgnoreCase(EnvironmentConfig.FEED_FORMAT) == 0) {
+                allowedExt = LinkAllowedExtensionsEnum.YARA_RULE.get().split(",");
+            }
+            // Checking Github suricata feeds
+            if (FeedTypeEnum.TYPE_GITHUB_SURICATA.getVarValue().compareToIgnoreCase(EnvironmentConfig.FEED_FORMAT) == 0) {
+                allowedExt = LinkAllowedExtensionsEnum.SURICATA_RULE.get().split(",");
+            }
+            if (allowedExt.length > 0) {
+                for (int i = 0; i < allowedExt.length; i++) {
+                    if (linkToVerify.endsWith(allowedExt[i])) {
+                        return true;
+                    }
                 }
             }
         }
