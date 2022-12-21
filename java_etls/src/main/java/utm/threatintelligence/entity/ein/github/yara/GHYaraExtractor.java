@@ -1,6 +1,7 @@
 package utm.threatintelligence.entity.ein.github.yara;
 
 import utm.threatintelligence.entity.ein.common.YaraRuleObject;
+import utm.threatintelligence.enums.yara.YaraStandardEnum;
 
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -130,24 +131,37 @@ public class GHYaraExtractor {
 
     // Method to extract imports from #IMP-$1-IMP# tag
     public static String importOrModifierExtractor(String impTag, boolean extractImport) {
+        // Removing duplicate spaces and line changes (generated value @x!S-R!x@ from cleanYaraSource() )
         impTag = impTag.replaceAll("\\s{2}", " ").trim();
         String result = "";
+        String[] arrayOfImports = impTag.split("@x!S-R!x@");
         if (impTag.length() > 0) {
             if (extractImport) {
-                if (impTag.startsWith("import")) {
-                    if (impTag.contains("global") || impTag.contains("private")) {
-                        return impTag.substring(0, impTag.lastIndexOf("@")+1);
-                    } else return impTag;
+                for (int i = 0; i < arrayOfImports.length; i++) {
+                    if (arrayOfImports[i].trim().startsWith("import")) {
+                        result += arrayOfImports[i].trim().replaceFirst("(\\w+)\\s","")+"@x!S-R!x@";
+                    }
                 }
             } else {
-                if (impTag.contains("global")) {
-                    return "global";
-                } else if (impTag.contains("private")) {
-                    return "private";
+                for (int i = 0; i < arrayOfImports.length; i++) {
+                    if (isAllowedModifier(arrayOfImports[i].trim())) {
+                        return arrayOfImports[i].trim();
+                    }
                 }
             }
         }
-        return result;
+        return result.trim();
+    }
+
+    // Method to check if a modifier match with allowed in Yara standard
+    public static boolean isAllowedModifier(String toCheck){
+        String[] arrayOfModifiers = YaraStandardEnum.ALLOWED_MODIFIERS.getValue().split(",");
+        for (int i = 0; i < arrayOfModifiers.length; i++) {
+            if (arrayOfModifiers[i].trim().compareToIgnoreCase(toCheck)==0) {
+                return true;
+            }
+        }
+        return false;
     }
 
     public void setYaraRuleObjects(ArrayList<YaraRuleObject> yaraRuleObjectArrayList) {

@@ -6,6 +6,7 @@ public enum TWAttributeTypesEnum {
     TYPE_NORMAL("normal"),
     TYPE_DESCRIPTOR("descriptor"),
     TYPE_TEXT("text"),
+    TYPE_SENSITIVE_TEXT("sensitive-text"),
     TYPE_IP("ip"),
     TYPE_CIDR("cidr"),
     TYPE_URL("url"),
@@ -22,9 +23,9 @@ public enum TWAttributeTypesEnum {
     TYPE_YARA_STRING_NAME("string"),
     TYPE_YARA_STRING("yara-string"),
     TYPE_YARA_IMPORT_NAME("import"),
-    TYPE_YARA_IMPORT("text"),
+    TYPE_YARA_IMPORT("sensitive-text"),
     TYPE_YARA_MODIFIER_NAME("modifier"),
-    TYPE_YARA_MODIFIER("text");
+    TYPE_YARA_MODIFIER("sensitive-text");
 
     private String valueType;
 

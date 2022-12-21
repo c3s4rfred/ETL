@@ -31,7 +31,7 @@ that don't have a field to get the reputation. Must be a value between -3 and 0,
 - `LINK_PATTERN` - (`Optional`) Represents a pattern to include links that match in case the `FEED_URL` holds many file links and have to scrap them 
 (Ex: For OSINT CIRCL is `(.+)-(.+)-(.+)-(.+)-(.+)\.json`)
 
-- `GITHUB_BRANCH_NAME` - (`Optional`) Represents the base `github branch` to scan for files (Ex: `master`). Only (`Required`) for `GITHUB_YARA` feed format
+- `GITHUB_BRANCH_NAME` - (`Optional`) Represents the base `github branch` to scan for files (Ex: `master`). Only (`Required`) for `GITHUB_YARA` and `GITHUB_SURICATA` feed formats
 
 - `THREAD_POOL_SIZE` - (`Optional`) Represents the concurrent process that can be executed, must be a positive Integer > 0, if you don't provide a value or is < 1, defaults to 8.
 
