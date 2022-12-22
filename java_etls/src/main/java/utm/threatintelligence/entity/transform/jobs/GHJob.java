@@ -12,6 +12,8 @@ import utm.threatintelligence.entity.transform.transf.FromYaraToEntity;
 import utm.threatintelligence.enums.FeedTypeEnum;
 import utm.threatintelligence.enums.FlowPhasesEnum;
 import utm.threatintelligence.enums.LogTypeEnum;
+import utm.threatintelligence.factory.TWTransformationFactory;
+import utm.threatintelligence.interfaces.IEntityTransform;
 import utm.threatintelligence.interfaces.IJobExecutor;
 import utm.threatintelligence.interfaces.IProcessor;
 import utm.threatintelligence.json.parser.GenericParser;
@@ -21,21 +23,26 @@ import utm.threatintelligence.scraper.LinkListGenerator;
 import utm.threatintelligence.scraper.LinkPage;
 import utm.threatintelligence.urlcreator.FullPathUrlCreator;
 
+import java.io.FileOutputStream;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
-public class GHYaraJob implements IJobExecutor {
-    private final Logger log = LoggerFactory.getLogger(GHYaraJob.class);
-    private static final String CLASSNAME = "GHYaraJob";
+/**
+ * Used to process data from a github repository
+ * */
+public class GHJob implements IJobExecutor {
+    private final Logger log = LoggerFactory.getLogger(GHJob.class);
+    private static final String CLASSNAME = "GHJob";
 
-    public GHYaraJob() {
+    public GHJob() {
     }
 
     @Override
     public void executeFlow() throws Exception {
-        final String ctx = CLASSNAME + ".executeGitHubYara";
+        final String ctx = CLASSNAME + ".executeGitHub";
         String feedSelected = EnvironmentConfig.FEED_FORMAT;
 
         // ----------------------- Log the process init -------------------------//
@@ -64,7 +71,7 @@ public class GHYaraJob implements IJobExecutor {
 
         //--------------------------------The concurrent ETL process is here-------------------------------------------
         while (LinkPage.getListOfLinks().size() > 0) {
-            executor.execute(new GitHubYaraParallelTask((String) LinkPage.getListOfLinks().remove(0)));
+            executor.execute(new GitHubParallelTask((String) LinkPage.getListOfLinks().remove(0)));
         }
 
         //Thread end is called
@@ -82,17 +89,17 @@ public class GHYaraJob implements IJobExecutor {
                 FlowPhasesEnum.PN_END_PROCESS.getVarValue()).logDefToString());
     }
 
-    public class GitHubYaraParallelTask implements Runnable {
+    public class GitHubParallelTask implements Runnable {
 
         String link;
 
-        public GitHubYaraParallelTask(String link) {
+        public GitHubParallelTask(String link) {
             this.link = link;
         }
 
         @Override
         public void run() {
-            final String ctx = CLASSNAME + ".parallelGitHubYaraExecutor";
+            final String ctx = CLASSNAME + ".parallelGitHubExecutor";
             GenericParser gp = new GenericParser();
             FileStreamReader reader = new FileStreamReader();
             String linkToProcess = "";
@@ -103,22 +110,32 @@ public class GHYaraJob implements IJobExecutor {
                 log.info(ctx + ": " + new LogDef(LogTypeEnum.TYPE_EXECUTION.getVarValue(), linkToProcess,
                         FlowPhasesEnum.P1_READ_FILE.getVarValue()).logDefToString());
 
-                String dataFromFile = reader.readFile(
-                        new FullPathUrlCreator().createURL(linkToProcess, EnvironmentConfig.LINK_SEPARATOR)
-                );
-
                 // ----------------------- Log and execute mapping from JSON file to class -------------------------//
                 log.info(ctx + ": " + new LogDef(LogTypeEnum.TYPE_EXECUTION.getVarValue(), linkToProcess,
                         FlowPhasesEnum.P2_MAP_JSON_TO_CLASS.getVarValue()).logDefToString());
 
-                ArrayList<YaraRuleObject> yaraRuleObjects = new GHYaraExtractor(dataFromFile).getYaraRuleObjects();
+                // Defining object to extract from source
+                Object githubObjects;
+                Object dataFromFile;
+                if (FeedTypeEnum.TYPE_GITHUB_SURICATA.getVarValue().compareToIgnoreCase(EnvironmentConfig.FEED_FORMAT) == 0){
+                    //Suricata rules
+                    dataFromFile = reader.readFileAsList(
+                            new FullPathUrlCreator().createURL(linkToProcess, EnvironmentConfig.LINK_SEPARATOR)
+                    );
+                    githubObjects = dataFromFile;
+                } else {
+                    dataFromFile = reader.readFile(
+                            new FullPathUrlCreator().createURL(linkToProcess, EnvironmentConfig.LINK_SEPARATOR)
+                    );
+                    githubObjects = new GHYaraExtractor((String)dataFromFile).getYaraRuleObjects();
+                }
 
                 // ----------------------- Log and execute transformation to Entity class -------------------------//
                 log.info(ctx + ": " + new LogDef(LogTypeEnum.TYPE_EXECUTION.getVarValue(), linkToProcess,
                         FlowPhasesEnum.P3_TRANSFORM_TO_ENTITY.getVarValue()).logDefToString());
 
-                FromYaraToEntity fromYaraToEntity = new FromYaraToEntity();
-                fromYaraToEntity.transform(yaraRuleObjects, null);
+                IEntityTransform fromSomethingToEntity = new TWTransformationFactory().getTransformation();
+                fromSomethingToEntity.transform(githubObjects);
 
                 // ----------------------- Log and execute mapping Entity to JSON -------------------------//
                 log.info(ctx + ": " + new LogDef(LogTypeEnum.TYPE_EXECUTION.getVarValue(), linkToProcess,
@@ -127,7 +144,7 @@ public class GHYaraJob implements IJobExecutor {
                 // ----------------------- Inserting via sdk -------------------------//
                 IRequestExecutor mainJob = new RequestFactory(100).getExecutor();
                 if (mainJob != null) {
-                    String output = (String) mainJob.executeRequest(TWEndPointEnum.POST_ENTITIES.get(), fromYaraToEntity.getThreatIntEntityList());
+                    String output = (String) mainJob.executeRequest(TWEndPointEnum.POST_ENTITIES.get(), fromSomethingToEntity.getThreatIntEntityList());
                     log.info(ctx + " " + linkToProcess + ": " + output);
                 }
 

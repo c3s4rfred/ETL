@@ -7,9 +7,10 @@ import utm.sdk.threatwinds.factory.RequestFactory;
 import utm.sdk.threatwinds.interfaces.IRequestExecutor;
 import utm.threatintelligence.config.EnvironmentConfig;
 import utm.threatintelligence.entity.ein.osint.circl.OCJsonEvent;
-import utm.threatintelligence.entity.transform.transf.FromOCToEntity;
 import utm.threatintelligence.enums.FlowPhasesEnum;
 import utm.threatintelligence.enums.LogTypeEnum;
+import utm.threatintelligence.factory.TWTransformationFactory;
+import utm.threatintelligence.interfaces.IEntityTransform;
 import utm.threatintelligence.interfaces.IJobExecutor;
 import utm.threatintelligence.interfaces.IProcessor;
 import utm.threatintelligence.json.parser.GenericParser;
@@ -17,7 +18,6 @@ import utm.threatintelligence.logging.LogDef;
 import utm.threatintelligence.readers.FileStreamReader;
 import utm.threatintelligence.scraper.LinkListGenerator;
 import utm.threatintelligence.scraper.LinkPage;
-import utm.sdk.threatwinds.service.bridge.WebClientService;
 import utm.threatintelligence.urlcreator.OsintCirclUrlCreator;
 
 import java.util.concurrent.Executors;
@@ -107,8 +107,8 @@ public class OCJob implements IJobExecutor {
                 log.info(ctx + ": " + new LogDef(LogTypeEnum.TYPE_EXECUTION.getVarValue(), linkToProcess,
                         FlowPhasesEnum.P3_TRANSFORM_TO_ENTITY.getVarValue()).logDefToString());
 
-                FromOCToEntity fromOsintCircl = new FromOCToEntity();
-                fromOsintCircl.transform(circl, null);
+                IEntityTransform fromSomethingToEntity = new TWTransformationFactory().getTransformation();
+                fromSomethingToEntity.transform(circl);
 
                 // ----------------------- Log and execute mapping Entity to JSON -------------------------//
                 log.info(ctx + ": " + new LogDef(LogTypeEnum.TYPE_EXECUTION.getVarValue(), linkToProcess,
@@ -117,7 +117,7 @@ public class OCJob implements IJobExecutor {
                 // ----------------------- Inserting via sdk -------------------------//
                 IRequestExecutor mainJob = new RequestFactory(1).getExecutor();
                 if (mainJob != null) {
-                    String output = (String) mainJob.executeRequest(TWEndPointEnum.POST_ENTITIES.get(), fromOsintCircl.getThreatIntEntityList());
+                    String output = (String) mainJob.executeRequest(TWEndPointEnum.POST_ENTITIES.get(), fromSomethingToEntity.getThreatIntEntityList());
                     log.info(ctx + " " + linkToProcess + ": " + output);
                 }
 

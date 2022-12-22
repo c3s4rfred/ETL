@@ -14,10 +14,11 @@ import utm.threatintelligence.enums.TWAttributeTypesEnum;
 import utm.threatintelligence.enums.TransformationEnum;
 import utm.threatintelligence.enums.osint.circl.OCReputationEnum;
 import utm.threatintelligence.enums.osint.circl.OCSpecificTypesToCheck;
+import utm.threatintelligence.interfaces.IEntityTransform;
 import utm.threatintelligence.interfaces.ITransform;
 import utm.threatintelligence.utilities.UtilitiesService;
 
-public class FromOCToEntity implements ITransform {
+public class FromOCToEntity implements IEntityTransform {
 
     private List<ThreatIntEntity> threatIntEntityList;
     private final String typeTransf = TransformationEnum.TYPE_TRANSFORMATION.getVarValue();
@@ -34,7 +35,7 @@ public class FromOCToEntity implements ITransform {
     }
 
     @Override
-    public <T> T transform(T origin, T destination) throws Exception {
+    public <T> T transform(T origin) throws Exception {
         String transformationsToApply = typeTransf + reputationTransf + valueUrlTransf + emailComponentsTransf +
                 miscTypeTransformation + datetimeValueTransformation + yaraTypeTransformation;
         if (origin instanceof OCJsonEvent) {
@@ -298,7 +299,7 @@ public class FromOCToEntity implements ITransform {
             TWAttributeTypesEnum.TYPE_DESCRIPTOR.getValueType(),
             ocObject.getComment(),
             new ThreatIntEntity(
-                TWAttributeTypesEnum.TYPE_TEXT.getValueType(),
+                TWAttributeTypesEnum.TYPE_SENSITIVE_TEXT.getValueType(),
                 ocObject.getName(),
                 BASE_REPUTATION,
                 new ArrayList<>(),
@@ -309,6 +310,7 @@ public class FromOCToEntity implements ITransform {
         return descriptor;
     }
 
+    @Override
     public List<ThreatIntEntity> getThreatIntEntityList() {
         return threatIntEntityList;
     }
@@ -375,23 +377,23 @@ public class FromOCToEntity implements ITransform {
             } else if (checkType.compareToIgnoreCase("report") == 0) {
                 return (T) ("text");
             } else if (checkType.compareToIgnoreCase("ssdeep") == 0) {
-                return (T) ("text");
+                return (T) ("sensitive-text");
             } else if (checkType.compareToIgnoreCase("imphash") == 0) {
-                return (T) ("text");
+                return (T) ("sensitive-text");
             } else if (checkType.compareToIgnoreCase("pdb") == 0) {
                 return (T) ("path");
             } else if (checkType.compareToIgnoreCase("crypto-material") == 0) {
-                return (T) ("text");
+                return (T) ("sensitive-text");
             } else if (checkType.compareToIgnoreCase("value") == 0) {
-                return (T) ("text");
+                return (T) ("sensitive-text");
             } else if (checkType.compareToIgnoreCase("mutex") == 0) {
-                return (T) ("text");
+                return (T) ("sensitive-text");
             } else if (checkType.compareToIgnoreCase("other") == 0) {
                 return (T) ("text");
             } else if (checkType.compareToIgnoreCase("annotation") == 0) {
-                return (T) ("text");
+                return (T) ("sensitive-text");
             } else if (checkType.compareToIgnoreCase("user-agent") == 0) {
-                return (T) ("text");
+                return (T) ("sensitive-text");
             } else if (checkType.compareToIgnoreCase("uri") == 0) {
                 return (T) ("path");
             } else if (checkType.compareToIgnoreCase("target-org") == 0) {
@@ -401,7 +403,7 @@ public class FromOCToEntity implements ITransform {
             } else if (checkType.compareToIgnoreCase("counter") == 0) {
                 return (T) ("integer");
             } else if (checkType.compareToIgnoreCase("stix2-pattern") == 0) {
-                return (T) ("text");
+                return (T) ("sensitive-text");
             } else if (checkType.compareToIgnoreCase("target-location") == 0) {
                 return (T) ("country-name");
             } else if (checkType.compareToIgnoreCase("phone-number") == 0) {
@@ -409,15 +411,15 @@ public class FromOCToEntity implements ITransform {
             } else if (checkType.compareToIgnoreCase("nationality") == 0) {
                 return (T) ("country-name");
             } else if (checkType.compareToIgnoreCase("named pipe") == 0) {
-                return (T) ("text");
+                return (T) ("sensitive-text");
             } else if (checkType.compareToIgnoreCase("AS") == 0) {
                 return (T) ("ASO");
             } else if (checkType.compareToIgnoreCase("http-method") == 0) {
-                return (T) ("text");
+                return (T) ("sensitive-text");
             } else if (checkType.compareToIgnoreCase("campaign-name") == 0) {
-                return (T) ("text");
+                return (T) ("sensitive-text");
             } else if (checkType.compareToIgnoreCase("target-user") == 0) {
-                return (T) ("text");
+                return (T) ("sensitive-text");
             } else if (checkType.compareToIgnoreCase("mobile-application-id") == 0) {
                 return (T) ("mobile-app-id");
             } else if (checkType.compareToIgnoreCase("target-external") == 0) {
@@ -425,15 +427,15 @@ public class FromOCToEntity implements ITransform {
             } else if (checkType.compareToIgnoreCase("whois-creation-date") == 0) {
                 return (T) ("datetime");
             } else if (checkType.compareToIgnoreCase("campaign-id") == 0) {
-                return (T) ("text");
+                return (T) ("sensitive-text");
             } else if (checkType.compareToIgnoreCase("pehash") == 0) {
-                return (T) ("text");
+                return (T) ("sensitive-text");
             } else if (checkType.compareToIgnoreCase("threat-actor") == 0) {
                 return (T) ("adversary");
             } else if (checkType.compareToIgnoreCase("weakness") == 0) {
-                return (T) ("text");
+                return (T) ("sensitive-text");
             } else if (checkType.compareToIgnoreCase("tlsh") == 0) {
-                return (T) ("text");
+                return (T) ("sensitive-text");
             } else if (checkType.compareToIgnoreCase("sha512/224") == 0) {
                 return (T) ("sha512-224");
             } else if (checkType.compareToIgnoreCase("sha512/256") == 0) {
@@ -441,9 +443,9 @@ public class FromOCToEntity implements ITransform {
             } else if (checkType.compareToIgnoreCase("authentihash") == 0) {
                 return (T) ("md5");
             } else if (checkType.compareToIgnoreCase("vhash") == 0) {
-                return (T) ("text");
+                return (T) ("sensitive-text");
             } else if (checkType.compareToIgnoreCase("sigma") == 0) {
-                return (T) ("text");
+                return (T) ("sensitive-text");
             } else if (checkType.compareToIgnoreCase("x509-fingerprint-md5") == 0) {
                 return (T) ("md5");
             } else if (checkType.compareToIgnoreCase("x509-fingerprint-sha1") == 0) {
@@ -520,11 +522,11 @@ public class FromOCToEntity implements ITransform {
                     GHYaraExtractor yaraExtractor = new GHYaraExtractor(checkType.getValue());
                     ArrayList<YaraRuleObject> yaraRuleObjects = yaraExtractor.getYaraRuleObjects();
                     FromYaraToEntity fromYaraToEntity = new FromYaraToEntity();
-                    fromYaraToEntity.transform(yaraRuleObjects, null);
+                    fromYaraToEntity.transform(yaraRuleObjects);
                     ThreatIntEntity yaraEntity = fromYaraToEntity.getThreatIntEntityList().get(0);
                     return (T) yaraEntity;
                 } catch (Exception ex) {
-                    checkType.setType(TWAttributeTypesEnum.TYPE_TEXT.getValueType());
+                    checkType.setType(TWAttributeTypesEnum.TYPE_SENSITIVE_TEXT.getValueType());
                     return (T)checkType;
                 }
 

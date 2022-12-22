@@ -4,13 +4,14 @@ import utm.sdk.threatwinds.entity.ein.AttrEntity;
 import utm.sdk.threatwinds.entity.ein.ThreatIntEntity;
 import utm.threatintelligence.entity.ein.common.YaraRuleObject;
 import utm.threatintelligence.enums.TWAttributeTypesEnum;
+import utm.threatintelligence.interfaces.IEntityTransform;
 import utm.threatintelligence.interfaces.ITransform;
 
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
-public class FromYaraToEntity implements ITransform {
+public class FromYaraToEntity implements IEntityTransform {
 
     private List<ThreatIntEntity> threatIntEntityList;
 
@@ -19,7 +20,7 @@ public class FromYaraToEntity implements ITransform {
     }
 
     @Override
-    public <T> T transform(T origin, T destination) throws Exception {
+    public <T> T transform(T origin) throws Exception {
         if (origin instanceof ArrayList<?>) {
             ArrayList<YaraRuleObject> yaraRuleObjectList = (ArrayList<YaraRuleObject>) origin;
             Iterator<YaraRuleObject> it;
@@ -108,6 +109,7 @@ public class FromYaraToEntity implements ITransform {
         return toWriteOn;
     }
 
+    @Override
     public List<ThreatIntEntity> getThreatIntEntityList() {
         return threatIntEntityList;
     }

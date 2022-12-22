@@ -6,13 +6,13 @@ import utm.threatintelligence.config.EnvironmentConfig;
 import utm.threatintelligence.entity.ein.common.CommonEntityObject;
 import utm.threatintelligence.entity.ein.common.ElementWithAssociations;
 import utm.threatintelligence.enums.TWAttributeTypesEnum;
-import utm.threatintelligence.interfaces.ITransform;
+import utm.threatintelligence.interfaces.IEntityTransform;
 
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
-public class FromElementListToEntity implements ITransform {
+public class FromElementListToEntity implements IEntityTransform {
 
     private List<ThreatIntEntity> threatIntEntityList;
 
@@ -21,7 +21,7 @@ public class FromElementListToEntity implements ITransform {
     }
 
     @Override
-    public <T> T transform(T origin, T destination) throws Exception {
+    public <T> T transform(T origin) throws Exception {
         if (origin instanceof List) {
             List<ElementWithAssociations> listObject = (List<ElementWithAssociations>) origin;
             Iterator<ElementWithAssociations> it;
@@ -77,7 +77,7 @@ public class FromElementListToEntity implements ITransform {
         }
         return toWriteOn;
     }
-
+    @Override
     public List<ThreatIntEntity> getThreatIntEntityList() {
         return threatIntEntityList;
     }

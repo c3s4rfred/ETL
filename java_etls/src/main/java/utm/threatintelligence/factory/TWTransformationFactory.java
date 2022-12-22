@@ -1,38 +1,29 @@
 package utm.threatintelligence.factory;
 
 import utm.threatintelligence.config.EnvironmentConfig;
-import utm.threatintelligence.entity.transform.jobs.DefaultJob;
-import utm.threatintelligence.entity.transform.jobs.ElementListJob;
-import utm.threatintelligence.entity.transform.jobs.GHJob;
-import utm.threatintelligence.entity.transform.jobs.OCJob;
+import utm.threatintelligence.entity.transform.transf.*;
 import utm.threatintelligence.enums.FeedTypeEnum;
-import utm.threatintelligence.interfaces.IJobExecutor;
-import utm.threatintelligence.utilities.UtilitiesService;
+import utm.threatintelligence.interfaces.IEntityTransform;
 
 /**
-* Main class of the API, dedicated to define the IJobExecutor feed to
-* be executed
+* Used to define which ITransformation has to be executed according to FEED_FORMAT
 * */
-public class TWJobFactory {
-    public TWJobFactory() {
+public class TWTransformationFactory {
+    public TWTransformationFactory() {
     }
 
-    public IJobExecutor getJob (){
-        if (UtilitiesService.isEnvironmentOk()) {
-            // OSINT feeds
+    public IEntityTransform getTransformation (){
             if (
                     FeedTypeEnum.TYPE_OSINT_CIRCL.getVarValue().compareToIgnoreCase(EnvironmentConfig.FEED_FORMAT) == 0 ||
                     FeedTypeEnum.TYPE_OSINT_BOTVRIJ.getVarValue().compareToIgnoreCase(EnvironmentConfig.FEED_FORMAT) == 0 ||
                     FeedTypeEnum.TYPE_OSINT_DIJITAL_SIDE.getVarValue().compareToIgnoreCase(EnvironmentConfig.FEED_FORMAT) == 0
             ) {
-                return new OCJob();
-            // Github feeds
+                return new FromOCToEntity();
             } else if (FeedTypeEnum.TYPE_GITHUB_YARA.getVarValue().compareToIgnoreCase(EnvironmentConfig.FEED_FORMAT) == 0 ||
-                       FeedTypeEnum.TYPE_RFXN_YARA.getVarValue().compareToIgnoreCase(EnvironmentConfig.FEED_FORMAT) == 0 ||
-                       FeedTypeEnum.TYPE_GITHUB_SURICATA.getVarValue().compareToIgnoreCase(EnvironmentConfig.FEED_FORMAT) == 0
-            ) {
-                return new GHJob();
-            // Element lists feeds
+                       FeedTypeEnum.TYPE_RFXN_YARA.getVarValue().compareToIgnoreCase(EnvironmentConfig.FEED_FORMAT) == 0) {
+                return new FromYaraToEntity();
+            } else if (FeedTypeEnum.TYPE_GITHUB_SURICATA.getVarValue().compareToIgnoreCase(EnvironmentConfig.FEED_FORMAT) == 0){
+                return new FromSuricataToEntity();
             } else if (FeedTypeEnum.TYPE_GENERIC_IP_LIST.getVarValue().compareToIgnoreCase(EnvironmentConfig.FEED_FORMAT) == 0 ||
                        FeedTypeEnum.TYPE_ABUSE_SSLIP_BLACKLIST.getVarValue().compareToIgnoreCase(EnvironmentConfig.FEED_FORMAT) == 0 ||
                        FeedTypeEnum.TYPE_COMMENT_IP_LIST.getVarValue().compareToIgnoreCase(EnvironmentConfig.FEED_FORMAT) == 0 ||
@@ -54,11 +45,9 @@ public class TWJobFactory {
                        FeedTypeEnum.TYPE_ZIP_WITH_GENERIC_MD5_LIST.getVarValue().compareToIgnoreCase(EnvironmentConfig.FEED_FORMAT) == 0 ||
                        FeedTypeEnum.TYPE_MALSHARE_CURRENT_DAILY_SHA256_LIST.getVarValue().compareToIgnoreCase(EnvironmentConfig.FEED_FORMAT) == 0
             ) {
-                return new ElementListJob();
+                return new FromElementListToEntity();
             } else {
-                return new DefaultJob();
+                return new DefaultToEntity();
             }
-        }
-        return null;
     }
 }
