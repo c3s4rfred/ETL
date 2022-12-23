@@ -4,11 +4,11 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
-    <groupId>com.utm.threatintelligence</groupId>
-    <artifactId>utmtw-transformation-api</artifactId>
+    <groupId>com.threatwinds</groupId>
+    <artifactId>tw-transformation-api</artifactId>
     <version>1.0.0</version>
     <packaging>jar</packaging>
-    <name>UTMTW Transformation API</name>
+    <name>TW Transformation API</name>
     <description>Transformation API for ThreatWinds</description>
 
     <dependencies>
@@ -18,9 +18,9 @@
             <version>2.9.1</version>
         </dependency>
         <dependency>
-            <groupId>com.utm.threatwinds</groupId>
-            <artifactId>utmtw-java-sdk</artifactId>
-            <version>1.0.3</version>
+            <groupId>com.threatwinds</groupId>
+            <artifactId>java-sdk</artifactId>
+            <version>1.0.6</version>
         </dependency>
         <dependency>
             <groupId>org.springframework.boot</groupId>
@@ -35,7 +35,7 @@
         <maven-compiler-plugin.version>3.10.1</maven-compiler-plugin.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <maven.build.timestamp.format>yyyyMMddHHmmss</maven.build.timestamp.format>
-        <start-class>utm.threatintelligence.Main</start-class>
+        <start-class>com.threatintelligence.Main</start-class>
     </properties>
     <build>
         <plugins>
@@ -100,7 +100,7 @@
                         <configuration>
                             <archive>
                                 <manifest>
-                                    <mainClass>Main</mainClass>
+                                    <mainClass>com.threatintelligence.Main</mainClass>
                                 </manifest>
                             </archive>
                             <descriptorRefs>
