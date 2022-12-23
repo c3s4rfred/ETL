@@ -5,6 +5,7 @@ import org.slf4j.LoggerFactory;
 import utm.sdk.threatwinds.enums.TWEndPointEnum;
 import utm.sdk.threatwinds.factory.RequestFactory;
 import utm.sdk.threatwinds.interfaces.IRequestExecutor;
+import utm.sdk.threatwinds.service.bridge.WebClientService;
 import utm.threatintelligence.config.EnvironmentConfig;
 import utm.threatintelligence.entity.ein.osint.circl.OCJsonEvent;
 import utm.threatintelligence.enums.FlowPhasesEnum;
@@ -27,6 +28,7 @@ import java.util.concurrent.TimeUnit;
 public class OCJob implements IJobExecutor {
     private final Logger log = LoggerFactory.getLogger(OCJob.class);
     private static final String CLASSNAME = "OCJob";
+    private static WebClientService webClientService;
 
     public OCJob() {
     }
@@ -35,6 +37,7 @@ public class OCJob implements IJobExecutor {
     public void executeFlow() throws Exception {
         final String ctx = CLASSNAME + ".executeOsint";
         String feedSelected = EnvironmentConfig.FEED_FORMAT;
+        webClientService = WebClientService.getAndConnectWebClient();
 
         // ----------------------- Log the process init -------------------------//
         log.info(ctx + ": " + new LogDef(LogTypeEnum.TYPE_EXECUTION.getVarValue(), feedSelected,
@@ -117,7 +120,8 @@ public class OCJob implements IJobExecutor {
                 // ----------------------- Inserting via sdk -------------------------//
                 IRequestExecutor mainJob = new RequestFactory(1).getExecutor();
                 if (mainJob != null) {
-                    String output = (String) mainJob.executeRequest(TWEndPointEnum.POST_ENTITIES.get(), fromSomethingToEntity.getThreatIntEntityList());
+                    String output = (String) mainJob.executeRequest(TWEndPointEnum.POST_ENTITIES.get(), fromSomethingToEntity.getThreatIntEntityList(),
+                            webClientService);
                     log.info(ctx + " " + linkToProcess + ": " + output);
                 }
 

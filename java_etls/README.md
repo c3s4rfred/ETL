@@ -246,7 +246,7 @@ mvn -Pprod clean compile assembly:single
 To ensure everything worked, run:
 
 ```
-java -jar target/utmtw-transformation-api-${VERSION}-jar-with-dependencies.jar
+java -jar target/tw-transformation-api-${VERSION}-jar-with-dependencies.jar
 ```
 
 ## Using Docker
