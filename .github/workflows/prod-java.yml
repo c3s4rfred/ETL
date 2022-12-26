@@ -1,0 +1,14 @@
+name: ThreatWinds ETL Java API BUILD
+on:
+  push:
+    branches: [ main ]
+    paths:
+      - 'java_etls/pom.xml'
+  workflow_dispatch:
+jobs:
+  docker-etl-java:
+    uses: ./.github/workflows/build-image-java.yml
+    with:
+      image_name: twetl
+      environment: prod
+      branch: main
