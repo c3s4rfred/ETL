@@ -37,7 +37,7 @@ public class OCJob implements IJobExecutor {
     public void executeFlow() throws Exception {
         final String ctx = CLASSNAME + ".executeOsint";
         String feedSelected = EnvironmentConfig.FEED_FORMAT;
-        webClientService = WebClientService.getAndConnectWebClient();
+        webClientService = new WebClientService().withAPIUrl("").withKey("").withSecret("").buildClient();
 
         // ----------------------- Log the process init -------------------------//
         log.info(ctx + ": " + new LogDef(LogTypeEnum.TYPE_EXECUTION.getVarValue(), feedSelected,
