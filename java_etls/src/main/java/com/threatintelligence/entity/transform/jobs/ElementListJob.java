@@ -146,7 +146,7 @@ public class ElementListJob implements IJobExecutor {
                         FlowPhasesEnum.P4_MAP_ENTITY_TO_JSON.getVarValue()).logDefToString());
 
                 // ----------------------- Inserting via sdk -------------------------//
-                IRequestExecutor mainJob = new RequestFactory(500).getExecutor();
+                IRequestExecutor mainJob = new RequestFactory(50).getExecutor();
                 if (mainJob != null) {
                     String output = (String) mainJob.executeRequest(TWEndPointEnum.POST_ENTITIES.get(), fromSomethingToEntity.getThreatIntEntityList(),
                             webClientService);
