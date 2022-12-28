@@ -1,5 +1,6 @@
 package com.threatintelligence.entity.transform.jobs;
 
+import com.sdk.threatwinds.entity.ein.ThreatIntEntity;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import com.sdk.threatwinds.enums.TWEndPointEnum;
@@ -22,6 +23,8 @@ import com.threatintelligence.scraper.LinkListGenerator;
 import com.threatintelligence.scraper.LinkPage;
 import com.threatintelligence.urlcreator.FullPathUrlCreator;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
@@ -33,6 +36,7 @@ public class GHJob implements IJobExecutor {
     private final Logger log = LoggerFactory.getLogger(GHJob.class);
     private static final String CLASSNAME = "GHJob";
     private static WebClientService webClientService;
+    private static List<ThreatIntEntity> threatIntEntityList;
 
     public GHJob() {
     }
@@ -41,6 +45,7 @@ public class GHJob implements IJobExecutor {
     public void executeFlow() throws Exception {
         final String ctx = CLASSNAME + ".executeGitHub";
         String feedSelected = EnvironmentConfig.FEED_FORMAT;
+        threatIntEntityList = new ArrayList<>();
         webClientService = new WebClientService().withAPIUrl("").withKey("").withSecret("").buildClient();
 
         // ----------------------- Log the process init -------------------------//
@@ -64,7 +69,7 @@ public class GHJob implements IJobExecutor {
                     feedSelected, "Problem getting data from host: " + ex.getLocalizedMessage()).logDefToString());
         }
 
-        //First we create fixed thread pool executor with 8 threads, one per file
+        //First we create fixed thread pool executor with EnvironmentConfig.THREAD_POOL_SIZE threads, one per file
         ThreadPoolExecutor executor = (ThreadPoolExecutor) Executors.newFixedThreadPool(EnvironmentConfig.THREAD_POOL_SIZE);
 
         //--------------------------------The concurrent ETL process is here-------------------------------------------
@@ -81,6 +86,14 @@ public class GHJob implements IJobExecutor {
             } catch (Exception e) {
                 e.printStackTrace();
             }
+        }
+
+        // ----------------------- Inserting via sdk -------------------------//
+        executor = (ThreadPoolExecutor) Executors.newFixedThreadPool(EnvironmentConfig.THREAD_POOL_SIZE);
+        IRequestExecutor mainJob = new RequestFactory(50).withThreadPoolExecutor(executor).getExecutor();
+        if (mainJob != null) {
+            log.info(ctx + " - Begin batch execution for "+GHJob.threatIntEntityList.size() + " entities");
+            mainJob.executeRequest(TWEndPointEnum.POST_ENTITIES.get(), GHJob.threatIntEntityList, webClientService);
         }
 
         log.info(ctx + ": " + new LogDef(LogTypeEnum.TYPE_EXECUTION.getVarValue(), feedSelected,
@@ -139,13 +152,8 @@ public class GHJob implements IJobExecutor {
                 log.info(ctx + ": " + new LogDef(LogTypeEnum.TYPE_EXECUTION.getVarValue(), linkToProcess,
                         FlowPhasesEnum.P4_MAP_ENTITY_TO_JSON.getVarValue()).logDefToString());
 
-                // ----------------------- Inserting via sdk -------------------------//
-                IRequestExecutor mainJob = new RequestFactory(50).getExecutor();
-                if (mainJob != null) {
-                    String output = (String) mainJob.executeRequest(TWEndPointEnum.POST_ENTITIES.get(), fromSomethingToEntity.getThreatIntEntityList(),
-                            webClientService);
-                    log.info(ctx + " " + linkToProcess + ": " + output);
-                }
+                // ----------------------- Add all generated entities to the final list of entities ---------------//
+                GHJob.threatIntEntityList.addAll(fromSomethingToEntity.getThreatIntEntityList());
 
                 log.info(ctx + ": " + new LogDef(LogTypeEnum.TYPE_EXECUTION.getVarValue(), linkToProcess,
                         FlowPhasesEnum.P5_END_FILE_PROCESS.getVarValue()).logDefToString());

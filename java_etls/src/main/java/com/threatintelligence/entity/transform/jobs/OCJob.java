@@ -1,5 +1,6 @@
 package com.threatintelligence.entity.transform.jobs;
 
+import com.sdk.threatwinds.entity.ein.ThreatIntEntity;
 import com.threatintelligence.scraper.LinkPage;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -21,6 +22,8 @@ import com.threatintelligence.readers.FileStreamReader;
 import com.threatintelligence.scraper.LinkListGenerator;
 import com.threatintelligence.urlcreator.OsintCirclUrlCreator;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
@@ -29,6 +32,7 @@ public class OCJob implements IJobExecutor {
     private final Logger log = LoggerFactory.getLogger(OCJob.class);
     private static final String CLASSNAME = "OCJob";
     private static WebClientService webClientService;
+    private static List<ThreatIntEntity> threatIntEntityList;
 
     public OCJob() {
     }
@@ -37,6 +41,7 @@ public class OCJob implements IJobExecutor {
     public void executeFlow() throws Exception {
         final String ctx = CLASSNAME + ".executeOsint";
         String feedSelected = EnvironmentConfig.FEED_FORMAT;
+        threatIntEntityList = new ArrayList<>();
         webClientService = new WebClientService().withAPIUrl("").withKey("").withSecret("").buildClient();
 
         // ----------------------- Log the process init -------------------------//
@@ -69,6 +74,14 @@ public class OCJob implements IJobExecutor {
             } catch (Exception e) {
                 e.printStackTrace();
             }
+        }
+
+        // ----------------------- Inserting via sdk -------------------------//
+        executor = (ThreadPoolExecutor) Executors.newFixedThreadPool(EnvironmentConfig.THREAD_POOL_SIZE);
+        IRequestExecutor mainJob = new RequestFactory(50).withThreadPoolExecutor(executor).getExecutor();
+        if (mainJob != null) {
+            log.info(ctx + " - Begin batch execution for "+OCJob.threatIntEntityList.size() + " entities");
+            mainJob.executeRequest(TWEndPointEnum.POST_ENTITIES.get(), OCJob.threatIntEntityList, webClientService);
         }
 
         log.info(ctx + ": " + new LogDef(LogTypeEnum.TYPE_EXECUTION.getVarValue(), feedSelected,
@@ -117,13 +130,8 @@ public class OCJob implements IJobExecutor {
                 log.info(ctx + ": " + new LogDef(LogTypeEnum.TYPE_EXECUTION.getVarValue(), linkToProcess,
                         FlowPhasesEnum.P4_MAP_ENTITY_TO_JSON.getVarValue()).logDefToString());
 
-                // ----------------------- Inserting via sdk -------------------------//
-                IRequestExecutor mainJob = new RequestFactory(1).getExecutor();
-                if (mainJob != null) {
-                    String output = (String) mainJob.executeRequest(TWEndPointEnum.POST_ENTITIES.get(), fromSomethingToEntity.getThreatIntEntityList(),
-                            webClientService);
-                    log.info(ctx + " " + linkToProcess + ": " + output);
-                }
+                // ----------------------- Add all generated entities to the final list of entities ---------------//
+                OCJob.threatIntEntityList.addAll(fromSomethingToEntity.getThreatIntEntityList());
 
                 log.info(ctx + ": " + new LogDef(LogTypeEnum.TYPE_EXECUTION.getVarValue(), linkToProcess,
                         FlowPhasesEnum.P5_END_FILE_PROCESS.getVarValue()).logDefToString());
