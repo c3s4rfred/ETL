@@ -1,1 +1,8 @@
 .DS_Store
+
+#SQLite database
+/java_etls/local_storage/*
+
+# Maven
+/log/
+/target/
