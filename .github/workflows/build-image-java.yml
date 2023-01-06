@@ -32,7 +32,7 @@ jobs:
       - name: Build with Maven
         env:
           MAVEN_USER: ${{secrets.GITHUB_ACTOR}}
-          MAVEN_TOKEN: ${{secrets.PKG_ACCESS_TOKEN}}
+          MAVEN_TOKEN: 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
         run: |
           echo "Building war in DEV environment"
           cd java_etls
