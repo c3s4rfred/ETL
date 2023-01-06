@@ -27,12 +27,13 @@ jobs:
         with:
           java-version: "11"
           distribution: "adopt"
+          server-password: MAVEN_SDK_TOKEN
           cache: maven
 
       - name: Build with Maven
         env:
-          MAVEN_USER: ${{secrets.GITHUB_ACTOR}}
-          MAVEN_TOKEN: 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
+          MAVEN_USER: ${{ secrets.GITHUB_ACTOR }}
+          MAVEN_SDK_TOKEN: ${{ secrets.MAVEN_SDK_TOKEN }}
         run: |
           echo "Building war in DEV environment"
           cd java_etls
