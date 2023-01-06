@@ -2,8 +2,14 @@ package com.threatintelligence.utilities;
 
 import java.time.*;
 import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
 
+import com.sdk.threatwinds.entity.ein.ThreatIntEntity;
 import com.threatintelligence.enums.EnvironmentsEnum;
+import com.threatintelligence.json.parser.GenericParser;
+import com.threatintelligence.storage.SQLiteConnection;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import com.threatintelligence.config.EnvironmentConfig;
@@ -64,7 +70,7 @@ public class UtilitiesService {
             );
             return false;
         }
-        if (EnvironmentConfig.LINK_PATTERN.compareTo("") == 0 && isLinkPatternRequiredForFeedFormat()){
+        if (EnvironmentConfig.LINK_PATTERN.compareTo("") == 0 && isLinkPatternRequiredForFeedFormat()) {
             log.warn(
                     "The variable " +
                             EnvironmentsEnum.LINK_PATTERN +
@@ -236,5 +242,61 @@ public class UtilitiesService {
             return false;
         }
         return true;
+    }
+
+    // Method to know if an entity is in the list
+    public static boolean isEntityInList(ThreatIntEntity searchValue, List<ThreatIntEntity> searchList) {
+        Iterator<ThreatIntEntity> it;
+        for (it = searchList.iterator(); it.hasNext(); ) {
+            ThreatIntEntity tmpEntity = it.next();
+            if (searchValue.getType().compareToIgnoreCase(tmpEntity.getType()) == 0
+                    && searchValue.getValue().compareToIgnoreCase(tmpEntity.getValue()) == 0) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    // Inserts in local storage the ThreatIntEntitys from entityList that aren't in the list of errors
+    public static void cleanErrorEntitiesAndUpdateDB(List<ThreatIntEntity> errorList,
+                                                     List<ThreatIntEntity> entityList, SQLiteConnection sqLiteConnection) {
+        Iterator<ThreatIntEntity> it;
+        GenericParser gp = new GenericParser();
+        for (it = entityList.iterator(); it.hasNext(); ) {
+            ThreatIntEntity tmpEntity = it.next();
+            if (!isEntityInList(tmpEntity, errorList)) {
+                try {
+                    String objectHash = "" + gp.parseTo(tmpEntity).hashCode();
+                    if (!sqLiteConnection.isAlreadyInserted(objectHash)) {
+                        sqLiteConnection.insert(objectHash);
+                    }
+                } catch (Exception jne) {
+                    log.info("There was errors registering entity in local storage, " +
+                            "please check your SQLite configuration, error: " + jne.getLocalizedMessage());
+                }
+            }
+        }
+    }
+
+    public static List<ThreatIntEntity> cleanInsertedEntities(SQLiteConnection sqLiteConnection,
+                                                              List<ThreatIntEntity> threatIntEntityList) {
+        // This kind of lists don't need to be generated again, so, first search if was inserted before
+        // if was inserted, the do nothing, otherwise add to the insertion list
+        List<ThreatIntEntity> cleanedList = new ArrayList<>();
+        GenericParser gp = new GenericParser();
+        try {
+            Iterator<ThreatIntEntity> it;
+            for (it = threatIntEntityList.iterator(); it.hasNext(); ) {
+                ThreatIntEntity tmpEntity = it.next();
+                String objectHash = "" + gp.parseTo(tmpEntity).hashCode();
+                if (!sqLiteConnection.isAlreadyInserted(objectHash)) {
+                    cleanedList.add(tmpEntity);
+                }
+            }
+        } catch (Exception jne) {
+            log.info("There was errors in local storage, " +
+                    "please check your SQLite configuration, error: " + jne.getLocalizedMessage());
+        }
+        return cleanedList;
     }
 }

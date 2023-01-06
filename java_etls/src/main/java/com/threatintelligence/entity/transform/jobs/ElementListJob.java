@@ -1,6 +1,7 @@
 package com.threatintelligence.entity.transform.jobs;
 
 import com.sdk.threatwinds.entity.ein.ThreatIntEntity;
+import com.sdk.threatwinds.factory.request.TWEndpointRequest;
 import com.threatintelligence.config.EnvironmentConfig;
 import com.threatintelligence.entity.ein.common.CommonEntityObject;
 import com.threatintelligence.entity.ein.common.ElementWithAssociations;
@@ -9,7 +10,9 @@ import com.threatintelligence.factory.TWTransformationFactory;
 import com.threatintelligence.interfaces.IEntityTransform;
 import com.threatintelligence.readers.FileStreamReader;
 import com.threatintelligence.scraper.LinkPage;
+import com.threatintelligence.storage.SQLiteConnection;
 import com.threatintelligence.urlcreator.FullPathUrlCreator;
+import com.threatintelligence.utilities.UtilitiesService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import com.sdk.threatwinds.enums.TWEndPointEnum;
@@ -23,7 +26,9 @@ import com.threatintelligence.interfaces.IJobExecutor;
 import com.threatintelligence.json.parser.GenericParser;
 import com.threatintelligence.logging.LogDef;
 
+import java.io.FileOutputStream;
 import java.net.URL;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -37,22 +42,29 @@ import java.util.concurrent.TimeUnit;
  * 1- Add new enum to FeedTypeEnum
  * 2- Add enum value previously created to TWJobFactory in the condition that returns new ElementListJob()
  * 3- Add enum value previously created to FillListOfDirectLinkFeeds() - > ElementListJob, in case that the feed is compressed, you must add the enum to
- *    FillListOfZippedLinks() - > ElementListJob too
+ * FillListOfZippedLinks() - > ElementListJob too
  * 4- Then do the feed implementation in createElemWithAssocList(List<String> origin) -> ElementListParallelTask
- * */
+ */
 public class ElementListJob implements IJobExecutor {
-    private final Logger log = LoggerFactory.getLogger(ElementListJob.class);
+    private static final Logger log = LoggerFactory.getLogger(ElementListJob.class);
     private static final String CLASSNAME = "ElementListJob";
     static List<String> listDirectLinkFeeds;
     static List<String> listZippedLink;
     private static WebClientService webClientService;
     private static List<ThreatIntEntity> threatIntEntityList;
+    private static SQLiteConnection sqLiteConnection;
 
     public ElementListJob() {
         this.listDirectLinkFeeds = new ArrayList<>();
         this.listZippedLink = new ArrayList<>();
         FillListOfDirectLinkFeeds();
         FillListOfZippedLinks();
+        try {
+            this.sqLiteConnection = new SQLiteConnection();
+        } catch (SQLException ex) {
+            log.info("There was errors with local storage, " +
+                    "please check your SQLite configuration, error: " + ex.getLocalizedMessage());
+        }
     }
 
     @Override
@@ -96,13 +108,23 @@ public class ElementListJob implements IJobExecutor {
             }
         }
 
+        //------------------------ Cleaning the list, avoiding reinsert entities already inserted--------------//
+        List<ThreatIntEntity> cleanedList = UtilitiesService.cleanInsertedEntities(this.sqLiteConnection,
+                ElementListJob.threatIntEntityList);
+
+        // Initializing the error list during post to endpoints
+        List<ThreatIntEntity> updateDBList = new ArrayList<>();
+
         // ----------------------- Inserting via sdk -------------------------//
         executor = (ThreadPoolExecutor) Executors.newFixedThreadPool(EnvironmentConfig.THREAD_POOL_SIZE);
-        IRequestExecutor mainJob = new RequestFactory(50).withThreadPoolExecutor(executor).getExecutor();
+        IRequestExecutor mainJob = new RequestFactory(1).withThreadPoolExecutor(executor).getExecutor();
         if (mainJob != null) {
-            log.info(ctx + " - Begin batch execution for "+ElementListJob.threatIntEntityList.size() + " entities");
-            mainJob.executeRequest(TWEndPointEnum.POST_ENTITIES.get(), ElementListJob.threatIntEntityList, webClientService);
+            log.info(ctx + " - Begin batch execution for " + cleanedList.size() + " entities");
+            updateDBList = (List<ThreatIntEntity>)mainJob.executeRequest(TWEndPointEnum.POST_ENTITIES.get(), cleanedList, webClientService);
         }
+
+        //------------------------ After posting the entities, perform database update of inserted ones --------//
+        UtilitiesService.cleanErrorEntitiesAndUpdateDB(updateDBList, cleanedList,this.sqLiteConnection);
 
         log.info(ctx + ": " + new LogDef(LogTypeEnum.TYPE_EXECUTION.getVarValue(), feedSelected,
                 FlowPhasesEnum.PN_END_PROCESS.getVarValue()).logDefToString());
@@ -130,7 +152,7 @@ public class ElementListJob implements IJobExecutor {
                 log.info(ctx + ": " + new LogDef(LogTypeEnum.TYPE_EXECUTION.getVarValue(), linkToProcess,
                         FlowPhasesEnum.P1_READ_FILE.getVarValue()).logDefToString());
 
-                if(isZippedLink()){
+                if (isZippedLink()) {
                     linkToProcess = reader.readFileNameFromZipFile(new URL(linkToProcess));
                 }
                 List<String> dataFromFile = reader.readFileAsList(
@@ -170,6 +192,8 @@ public class ElementListJob implements IJobExecutor {
     }
 
     public static List<ElementWithAssociations> createElemWithAssocList(List<String> origin) {
+        // GenericParser -> Used to know if the object was inserted before
+        GenericParser gp = new GenericParser();
         // Do different cleaning process for different feeds
         List<ElementWithAssociations> cleanedList = new ArrayList<>();
         Iterator<String> it;
@@ -247,7 +271,7 @@ public class ElementListJob implements IJobExecutor {
                     cleanedList.add(element);
                 }
                 // URL lists
-                if (FeedTypeEnum.TYPE_GENERIC_URL_LIST.getVarValue().compareToIgnoreCase(EnvironmentConfig.FEED_FORMAT) == 0 ){
+                if (FeedTypeEnum.TYPE_GENERIC_URL_LIST.getVarValue().compareToIgnoreCase(EnvironmentConfig.FEED_FORMAT) == 0) {
                     // Generating default protocol if not exists
                     attr = generateProtocol(attr);
 
@@ -257,7 +281,7 @@ public class ElementListJob implements IJobExecutor {
                     ElementWithAssociations element = new ElementWithAssociations(commonEObject, new ArrayList<>());
                     cleanedList.add(element);
                 }
-                if (FeedTypeEnum.TYPE_PHISHTANK_ONLINE_URL_LIST.getVarValue().compareToIgnoreCase(EnvironmentConfig.FEED_FORMAT) == 0){
+                if (FeedTypeEnum.TYPE_PHISHTANK_ONLINE_URL_LIST.getVarValue().compareToIgnoreCase(EnvironmentConfig.FEED_FORMAT) == 0) {
                     // Phishtank feed csv data lines begins with the phish_id
                     if (attr.matches("^(\\d+)(.+)")) {
                         String[] arrayCSV = attr.split(",");
@@ -269,16 +293,16 @@ public class ElementListJob implements IJobExecutor {
                         cleanedList.add(element);
                     }
                 }
-                if (FeedTypeEnum.TYPE_DIAMOND_FOX_URL_LIST.getVarValue().compareToIgnoreCase(EnvironmentConfig.FEED_FORMAT) == 0){
-                        String[] arrayCSV = attr.split(",");
-                        // With generation of default protocol if not exists
-                        CommonEntityObject commonEObject = new CommonEntityObject(TWAttributeTypesEnum.TYPE_URL.getValueType(),
-                                generateProtocol(arrayCSV[0].trim()), EnvironmentConfig.FEED_THREAT_DESCRIPTION,
-                                EnvironmentConfig.FEED_BASE_REPUTATION);
-                        ElementWithAssociations element = new ElementWithAssociations(commonEObject, new ArrayList<>());
-                        cleanedList.add(element);
+                if (FeedTypeEnum.TYPE_DIAMOND_FOX_URL_LIST.getVarValue().compareToIgnoreCase(EnvironmentConfig.FEED_FORMAT) == 0) {
+                    String[] arrayCSV = attr.split(",");
+                    // With generation of default protocol if not exists
+                    CommonEntityObject commonEObject = new CommonEntityObject(TWAttributeTypesEnum.TYPE_URL.getValueType(),
+                            generateProtocol(arrayCSV[0].trim()), EnvironmentConfig.FEED_THREAT_DESCRIPTION,
+                            EnvironmentConfig.FEED_BASE_REPUTATION);
+                    ElementWithAssociations element = new ElementWithAssociations(commonEObject, new ArrayList<>());
+                    cleanedList.add(element);
                 }
-                if (FeedTypeEnum.TYPE_VXVAULT_URL_LIST.getVarValue().compareToIgnoreCase(EnvironmentConfig.FEED_FORMAT) == 0){
+                if (FeedTypeEnum.TYPE_VXVAULT_URL_LIST.getVarValue().compareToIgnoreCase(EnvironmentConfig.FEED_FORMAT) == 0) {
                     if (attr.matches("^(http)(.+)")) {
                         // With generation of default protocol if not exists
                         CommonEntityObject commonEObject = new CommonEntityObject(TWAttributeTypesEnum.TYPE_LINK.getValueType(),
@@ -344,10 +368,11 @@ public class ElementListJob implements IJobExecutor {
                     cleanedList.add(element);
                 }
                 // CVE lists
-                if (FeedTypeEnum.TYPE_GENERIC_CVE_LIST.getVarValue().compareToIgnoreCase(EnvironmentConfig.FEED_FORMAT) == 0 ) {
+                if (FeedTypeEnum.TYPE_GENERIC_CVE_LIST.getVarValue().compareToIgnoreCase(EnvironmentConfig.FEED_FORMAT) == 0) {
                     CommonEntityObject commonEObject = new CommonEntityObject(TWAttributeTypesEnum.TYPE_CVE.getValueType(),
                             attr, EnvironmentConfig.FEED_THREAT_DESCRIPTION,
                             EnvironmentConfig.FEED_BASE_REPUTATION);
+
                     ElementWithAssociations element = new ElementWithAssociations(commonEObject, new ArrayList<>());
                     cleanedList.add(element);
                 }
@@ -363,7 +388,7 @@ public class ElementListJob implements IJobExecutor {
                     cleanedList.add(element);
                 }
                 // MD5 hashes lists
-                if (FeedTypeEnum.TYPE_ZIP_WITH_GENERIC_MD5_LIST.getVarValue().compareToIgnoreCase(EnvironmentConfig.FEED_FORMAT) == 0 ){
+                if (FeedTypeEnum.TYPE_ZIP_WITH_GENERIC_MD5_LIST.getVarValue().compareToIgnoreCase(EnvironmentConfig.FEED_FORMAT) == 0) {
                     CommonEntityObject commonEObject = new CommonEntityObject(TWAttributeTypesEnum.TYPE_MD5.getValueType(),
                             attr, EnvironmentConfig.FEED_THREAT_DESCRIPTION,
                             EnvironmentConfig.FEED_BASE_REPUTATION);
@@ -371,8 +396,8 @@ public class ElementListJob implements IJobExecutor {
                     cleanedList.add(element);
                 }
                 // SHA256 hashes lists
-                if (FeedTypeEnum.TYPE_MALSHARE_CURRENT_DAILY_SHA256_LIST.getVarValue().compareToIgnoreCase(EnvironmentConfig.FEED_FORMAT) == 0 ){
-                    attr = attr.trim().replaceAll("\\s+"," ");
+                if (FeedTypeEnum.TYPE_MALSHARE_CURRENT_DAILY_SHA256_LIST.getVarValue().compareToIgnoreCase(EnvironmentConfig.FEED_FORMAT) == 0) {
+                    attr = attr.trim().replaceAll("\\s+", " ");
                     String[] arrayCSV = attr.split(" ");
                     CommonEntityObject commonEObject = new CommonEntityObject(TWAttributeTypesEnum.TYPE_SHA256.getValueType(),
                             arrayCSV[2], EnvironmentConfig.FEED_THREAT_DESCRIPTION,
@@ -415,6 +440,7 @@ public class ElementListJob implements IJobExecutor {
         // SHA256 feeds
         listDirectLinkFeeds.add(FeedTypeEnum.TYPE_MALSHARE_CURRENT_DAILY_SHA256_LIST.getVarValue());
     }
+
     // Method to fill the ListZippedLink
     public static void FillListOfZippedLinks() {
         // Zipped URL feeds
@@ -433,6 +459,7 @@ public class ElementListJob implements IJobExecutor {
         }
         return false;
     }
+
     // Method to know if FEED_FORMAT value is zipped link
     public boolean isZippedLink() {
         Iterator<String> it;
@@ -444,15 +471,16 @@ public class ElementListJob implements IJobExecutor {
         }
         return false;
     }
+
     // Method to check if protocol is present, if not, generates https by default
-    public static String generateProtocol(String value){
+    public static String generateProtocol(String value) {
         if (value.matches("(.+)(https|http)(://)(.+)")) {
             value = value.replaceFirst("(.+)(https|http)", "$2");
         } else if (!value.matches("^(https|http)(://)(.+)")) {
             value = "https://" + value;
         }
         // Replacing security protocol
-        value = value.replaceFirst("hxxp","http");
+        value = value.replaceFirst("hxxp", "http");
         return value;
     }
 

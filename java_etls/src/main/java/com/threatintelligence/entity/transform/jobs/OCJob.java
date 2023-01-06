@@ -2,6 +2,8 @@ package com.threatintelligence.entity.transform.jobs;
 
 import com.sdk.threatwinds.entity.ein.ThreatIntEntity;
 import com.threatintelligence.scraper.LinkPage;
+import com.threatintelligence.storage.SQLiteConnection;
+import com.threatintelligence.utilities.UtilitiesService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import com.sdk.threatwinds.enums.TWEndPointEnum;
@@ -22,6 +24,7 @@ import com.threatintelligence.readers.FileStreamReader;
 import com.threatintelligence.scraper.LinkListGenerator;
 import com.threatintelligence.urlcreator.OsintCirclUrlCreator;
 
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.Executors;
@@ -33,8 +36,15 @@ public class OCJob implements IJobExecutor {
     private static final String CLASSNAME = "OCJob";
     private static WebClientService webClientService;
     private static List<ThreatIntEntity> threatIntEntityList;
+    private static SQLiteConnection sqLiteConnection;
 
     public OCJob() {
+        try {
+            this.sqLiteConnection = new SQLiteConnection();
+        } catch (SQLException ex) {
+            log.info("There was errors with local storage, " +
+                    "please check your SQLite configuration, error: " + ex.getLocalizedMessage());
+        }
     }
 
     @Override
@@ -76,13 +86,23 @@ public class OCJob implements IJobExecutor {
             }
         }
 
+        //------------------------ Cleaning the list, avoiding reinsert entities already inserted--------------//
+        List<ThreatIntEntity> cleanedList = UtilitiesService.cleanInsertedEntities(this.sqLiteConnection,
+                OCJob.threatIntEntityList);
+
+        // Initializing the error list during post to endpoints
+        List<ThreatIntEntity> updateDBList = new ArrayList<>();
+
         // ----------------------- Inserting via sdk -------------------------//
         executor = (ThreadPoolExecutor) Executors.newFixedThreadPool(EnvironmentConfig.THREAD_POOL_SIZE);
-        IRequestExecutor mainJob = new RequestFactory(50).withThreadPoolExecutor(executor).getExecutor();
+        IRequestExecutor mainJob = new RequestFactory(1).withThreadPoolExecutor(executor).getExecutor();
         if (mainJob != null) {
-            log.info(ctx + " - Begin batch execution for "+OCJob.threatIntEntityList.size() + " entities");
-            mainJob.executeRequest(TWEndPointEnum.POST_ENTITIES.get(), OCJob.threatIntEntityList, webClientService);
+            log.info(ctx + " - Begin batch execution for " + cleanedList.size() + " entities");
+            updateDBList = (List<ThreatIntEntity>)mainJob.executeRequest(TWEndPointEnum.POST_ENTITIES.get(), cleanedList, webClientService);
         }
+
+        //------------------------ After posting the entities, perform database update of inserted ones --------//
+        UtilitiesService.cleanErrorEntitiesAndUpdateDB(updateDBList, cleanedList,this.sqLiteConnection);
 
         log.info(ctx + ": " + new LogDef(LogTypeEnum.TYPE_EXECUTION.getVarValue(), feedSelected,
                 FlowPhasesEnum.PN_END_PROCESS.getVarValue()).logDefToString());
