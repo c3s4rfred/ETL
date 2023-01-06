@@ -17,7 +17,7 @@
         </repository>
         <repository>
           <id>github</id>
-		  <url>https://maven.pkg.github.com/ThreatWinds/JavaSDK</url>
+		  <url>https://maven.pkg.github.com/ThreatWinds/**</url>
           <snapshots>
             <enabled>true</enabled>
           </snapshots>
