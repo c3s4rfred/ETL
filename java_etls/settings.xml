@@ -5,7 +5,7 @@
 	<server>
       <id>github</id>
       <username>c3s4rfred</username>
-      <password>${env.MAVEN_TOKEN}</password>
+      <password>${env.MAVEN_SDK_TOKEN}</password>
     </server>
   </servers>
   <profiles>
