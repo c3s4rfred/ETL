@@ -50,6 +50,7 @@ jobs:
         uses: docker/build-push-action@v2
         with:
           context: .
+          file: java_etls/Dockerfile
           push: true
           tags: ghcr.io/threatwinds/${{inputs.image_name}}:${{inputs.environment}}_${{ env.TAG }},ghcr.io/threatwinds/${{inputs.image_name}}:${{inputs.environment}}
 
