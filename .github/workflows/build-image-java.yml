@@ -27,17 +27,14 @@ jobs:
         with:
           java-version: "11"
           distribution: "adopt"
-          server-password: MAVEN_SDK_TOKEN
-          cache: maven
 
       - name: Build with Maven
-        env:
-          MAVEN_USER: ${{ secrets.GITHUB_ACTOR }}
-          MAVEN_SDK_TOKEN: ${{ secrets.MAVEN_SDK_TOKEN }}
         run: |
-          echo "Building war in DEV environment"
+          echo "Building jar in PROD environment"
           cd java_etls
-          mvn -B -Pprod clean compile assembly:single --file pom.xml --settings settings.xml
+          mvn -B -Pprod clean compile assembly:single --file pom.xml -s settings.xml
+        env:
+          MAVEN_TK: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Setup Docker
         uses: docker/setup-buildx-action@v1
