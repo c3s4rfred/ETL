@@ -49,8 +49,7 @@ jobs:
       - name: Build Image
         uses: docker/build-push-action@v2
         with:
-          context: .
-          file: java_etls/Dockerfile
+          context: /home/runner/work/ETL/ETL/java_etls/
           push: true
           tags: ghcr.io/threatwinds/${{inputs.image_name}}:${{inputs.environment}}_${{ env.TAG }},ghcr.io/threatwinds/${{inputs.image_name}}:${{inputs.environment}}
 
